@@ -8,5 +8,5 @@ containing the status code and message from the underlying failure will be retur
 
 
 Required pip packages:
-Flask
-icoscp_core
+- flask
+- icoscp_core
