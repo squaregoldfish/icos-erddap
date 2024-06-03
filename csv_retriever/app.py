@@ -8,11 +8,9 @@ If the object exists, the CSV content will be returned. Otherwise a response
 containing the status code and message from the underlying failure will be returned.
 """
 
-import os
 import re
 from flask import Flask
 from icoscp_core.icos import data
-from http.client import HTTPResponse
 
 app = Flask(__name__)
 
