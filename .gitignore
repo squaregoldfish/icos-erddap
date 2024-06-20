@@ -162,3 +162,11 @@ cython_debug/
 # MacOS nonsense
 **/.DS_Store
 
+# Locally created files
+**/config.toml
+**/sqlite
+
+# Locally created files
+**/config.toml
+**/*.sqlite
+
