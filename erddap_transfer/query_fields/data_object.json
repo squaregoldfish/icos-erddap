@@ -1,0 +1,12 @@
+[
+  {
+    "iri": "cpmeta:hasObjectSpec",
+    "name": "spec",
+    "type": "uri"
+  },
+  {
+    "iri": "cpmeta:hasNumberOfRows",
+    "name": "rows",
+    "type": "value"
+  }
+]

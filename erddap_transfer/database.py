@@ -3,6 +3,7 @@ Functions to interact with the database that
 tracks the status of the ERDDAP transfer mechanism.
 """
 import sqlite3
+import json
 import logging
 from datetime import datetime
 
@@ -112,6 +113,36 @@ def _is_db_set_up(conn):
     try:
         c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='data_object'")
         return len(c.fetchall()) > 0
+    finally:
+        c.close()
+
+
+def get_metadata(conn, pid):
+    """
+    Get the metadata for a given pid
+    """
+    c = conn.cursor()
+    try:
+        c.execute("SELECT metadata FROM data_object WHERE id = ?", [pid])
+        record = c.fetchone()
+        if record is None:
+            raise ValueError(f"PID {pid} not in database")
+
+        return dict() if record[0] is None else json.loads(record[0])
+    finally:
+        c.close()
+
+
+def set_metadata(conn, pid, metadata):
+    """
+    Store metadata for a PID
+    """
+    logging.info(f"Updating metadata for PID {pid}")
+    c = conn.cursor()
+    try:
+        c.execute("UPDATE data_object SET metadata = ?, updated = 1 WHERE id = ?", [json.dumps(metadata), pid])
+        if c.rowcount == 0:
+            raise ValueError(f"PID {pid} not in database")
     finally:
         c.close()
 

@@ -29,9 +29,14 @@ def main(config):
                 elif database.is_deleted(db, pid):
                     database.undelete(db, pid)
 
-                # Retrieve the metadata
-                # If different/new, add it and set Updated flag (if not new)
+                metadata = icos.get_metadata(pid)
+                existing_metadata = database.get_metadata(db, pid)
+                metadata_updated = existing_metadata is None or existing_metadata != metadata
 
+                if metadata_updated:
+                    database.set_metadata(db, pid, metadata)
+
+                break
 
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted
@@ -39,8 +44,6 @@ def main(config):
             newly_deleted_pids = list(set(local_pids) - set(cp_pids))
             for pid in newly_deleted_pids:
                 database.mark_deleted(db, pid)
-
-
 
 
     except Exception as e:
