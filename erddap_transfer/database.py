@@ -56,12 +56,12 @@ def is_deleted(conn, pid):
 
 def undelete(conn, pid):
     """
-    Clear the DELETED flag for a specified record
+    Clear the DELETED flag for a specified record.
     """
     logging.info(f"Removing delete flag for {pid}")
     c = conn.cursor()
     try:
-        c.execute("UPDATE data_object SET deleted = 0, deleted_time = NULL WHERE id = ?", [pid])
+        c.execute("UPDATE data_object SET deleted = 0, deleted_time = NULL, updated = 1 WHERE id = ?", [pid])
         if c.rowcount == 0:
             raise ValueError(f"PID {pid} not in database")
     finally:
@@ -69,7 +69,7 @@ def undelete(conn, pid):
 
 
 def get_active_pids(conn):
-    logging.debug("Retrieveing all stored PIDs")
+    logging.debug("Retrieving all stored PIDs")
     c = conn.cursor()
     try:
         c.execute("SELECT id FROM data_object WHERE deleted = 0 ORDER BY id")
@@ -88,7 +88,7 @@ def add_pid(conn, pid):
 
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO data_object VALUES(?, NULL, 1, 0, 0, NULL)", [pid])
+        c.execute("INSERT INTO data_object VALUES(?, NULL, NULL, 1, 0, 0, NULL)", [pid])
     finally:
         c.close()
 
@@ -147,6 +147,55 @@ def set_metadata(conn, pid, metadata):
         c.close()
 
 
+def clear_new(conn, pid):
+    """
+    Set the NEW flag for a PID to False
+    """
+    logging.debug(f"Clearing NEW flag for {pid}")
+    c = conn.cursor()
+    try:
+        c.execute("UPDATE data_object SET new = 0 WHERE id = ?", [pid])
+        if c.rowcount == 0:
+            raise ValueError(f"PID {pid} not in database")
+    finally:
+        c.close()
+
+def get_pids_with_status(conn):
+    c = conn.cursor()
+    try:
+        c.execute("SELECT id, new, updated, deleted FROM data_object")
+        records = c.fetchall()
+        result = []
+
+        for record in records:
+            dataset = dict()
+            dataset["pid"] = record[0]
+            dataset["new"] = bool(record[1])
+            dataset["update"] = bool(record[2])
+            dataset["delete"] = bool(record[3])
+
+            result.append(dataset)
+
+        return result
+    finally:
+        c.close()
+
+def get_filename(conn, pid):
+    """
+    Get the filename for a PID
+    """
+    c = conn.cursor()
+    try:
+        c.execute("SELECT metadata FROM data_object WHERE id = ?", [pid])
+        record = c.fetchone()
+        if record is None:
+            raise ValueError(f"PID {pid} not in database")
+
+        metadata = json.loads(record[0])
+        return metadata["data_object"]["fileName"]
+    finally:
+        c.close()
+
 def _init_db(conn):
     logging.info("Initialising new database")
 
@@ -156,6 +205,7 @@ def _init_db(conn):
     table_sql = """CREATE TABLE data_object(
     id TEXT,
     metadata TEXT,
+    datasets_xml TEXT,
     new INTEGER,
     updated INTEGER,
     deleted INTEGER,

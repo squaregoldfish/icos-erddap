@@ -16,6 +16,7 @@ def main(config):
     try:
         logging.basicConfig(filename=_LOG_FILE_,
                             format='%(asctime)s %(levelname)s - %(message)s', level=config["log_level"])
+        logging.info("Updating info from ICOS Carbon Portal")
 
         # Connect to the internal database
         with database.connect() as db:
@@ -36,7 +37,8 @@ def main(config):
                 if metadata_updated:
                     database.set_metadata(db, pid, metadata)
 
-                break
+                # If we only want to test with one dataset
+                # break
 
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted

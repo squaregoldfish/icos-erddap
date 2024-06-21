@@ -8,5 +8,10 @@
     "iri": "cpmeta:hasNumberOfRows",
     "name": "rows",
     "type": "value"
+  },
+  {
+    "iri": "cpmeta:hasName",
+    "name": "fileName",
+    "type": "value"
   }
 ]

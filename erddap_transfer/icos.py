@@ -47,7 +47,7 @@ def get_metadata(pid):
     """
     metadata = dict()
 
-    metadata["data_object"] = _run_basic_query(_CP_QUERY_PREFIX, _make_data_object_uri(pid), "data_object")
+    metadata["data_object"] = _run_basic_query(_CP_QUERY_PREFIX, make_data_object_uri(pid), "data_object")
 
     return metadata
 
@@ -83,5 +83,5 @@ def _run_basic_query(prefix, item, fields):
     return result
 
 
-def _make_data_object_uri(pid):
+def make_data_object_uri(pid):
     return f"https://meta.icos-cp.eu/objects/{pid}"
