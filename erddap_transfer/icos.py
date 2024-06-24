@@ -39,20 +39,22 @@ def get_all_data_object_ids():
     return result
 
 
-def get_metadata(pid):
+def get_metadata(pids):
     """
     Retrieve the complete metadata for a PID as a python dict.
     The dict will be built in sections corresponding to the
     concepts and structures of the ICOS metadata.
     """
     metadata = dict()
+    for pid in pids:
+        metadata[pid] = {}
 
-    metadata["data_object"] = _run_basic_query(_CP_QUERY_PREFIX, make_data_object_uri(pid), "data_object")
+    _run_metadata_query(_CP_QUERY_PREFIX, metadata, "data_object")
 
     return metadata
 
 
-def _run_basic_query(prefix, item, fields):
+def _run_metadata_query(prefix, metadata, fields):
 
     with open(f"query_fields/{fields}.json") as f:
         field_details = json.load(f)
@@ -64,24 +66,34 @@ def _run_basic_query(prefix, item, fields):
         query += f" ?{field['name']}"
 
     query += " WHERE {\n"
-    query += f"VALUES ?obj {{ <{item}> }}\n"
+
+    # Add all PIDs (as URIs)
+    query += "VALUES ?obj { "
+    for pid in metadata.keys():
+        query += f"<{make_data_object_uri(pid)}> "
+    query += "}\n"
 
     for field in field_details:
         query += f"?obj {field['iri']} ?{field['name']} .\n"
 
     query += "}"
 
-    logging.debug(f"""Query for item {item}:\n{query}""")
+    logging.debug(f"""Metadata query for {fields}:\n{query}""")
 
     query_result = meta.sparql_select(query)
-    result = dict()
-    result["item"] = item
+    for record in query_result.bindings:
+        obj_id = pid_from_uri(getattr(record["obj"], "uri"))
 
-    for field in field_details:
-        result[field["name"]] = getattr(query_result.bindings[0][field["name"]], field["type"])
+        item_data = dict()
 
-    return result
+        for field in field_details:
+            item_data[field["name"]] = getattr(record[field["name"]], field["type"])
+
+        metadata[obj_id][fields] = item_data
 
 
 def make_data_object_uri(pid):
     return f"https://meta.icos-cp.eu/objects/{pid}"
+
+def pid_from_uri(uri):
+    return uri.split("/")[-1]

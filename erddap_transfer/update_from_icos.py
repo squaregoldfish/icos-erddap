@@ -30,15 +30,6 @@ def main(config):
                 elif database.is_deleted(db, pid):
                     database.undelete(db, pid)
 
-                metadata = icos.get_metadata(pid)
-                existing_metadata = database.get_metadata(db, pid)
-                metadata_updated = existing_metadata is None or existing_metadata != metadata
-
-                if metadata_updated:
-                    database.set_metadata(db, pid, metadata)
-
-                # If we only want to test with one dataset
-                # break
 
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted
@@ -47,6 +38,16 @@ def main(config):
             for pid in newly_deleted_pids:
                 database.mark_deleted(db, pid)
 
+
+            # Get the metadata for the PIDs and update if necessary
+            metadata = icos.get_metadata(cp_pids)
+
+            for pid in metadata.keys():
+                existing_metadata = database.get_metadata(db, pid)
+                metadata_updated = existing_metadata is None or existing_metadata != metadata[pid]
+
+            if metadata_updated:
+                database.set_metadata(db, pid, metadata[pid])
 
     except Exception as e:
         logging.error(f"Unhandled exception: {e}")
