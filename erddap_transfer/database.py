@@ -97,7 +97,7 @@ def mark_deleted(conn, pid):
     logging.info(f"Marking {pid} as deleted")
     c = conn.cursor()
     try:
-        c.execute("UPDATE data_object SET deleted = 1, deleted_time = ? WHERE id = ?",
+        c.execute("UPDATE data_object SET new = 0, updated = 0, deleted = 1, deleted_time = ? WHERE id = ?",
                   [datetime.now().isoformat(), pid])
         if c.rowcount == 0:
             raise ValueError(f"PID {pid} not in database")
