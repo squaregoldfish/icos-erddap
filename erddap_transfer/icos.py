@@ -23,6 +23,7 @@ def get_all_data_object_ids():
     SELECT ?dobj WHERE {{
     VALUES ?spec {{ {_DATA_TYPES} }}
     ?dobj cpmeta:hasObjectSpec ?spec .
+    ?dobj cpmeta:hasSizeInBytes ?size .
     }}
     """
 
