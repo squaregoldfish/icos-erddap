@@ -46,8 +46,8 @@ def main(config):
                 existing_metadata = database.get_metadata(db, pid)
                 metadata_updated = existing_metadata is None or existing_metadata != metadata[pid]
 
-            if metadata_updated:
-                database.set_metadata(db, pid, metadata[pid])
+                if metadata_updated:
+                    database.set_metadata(db, pid, metadata[pid])
 
     except Exception as e:
         logging.error(f"Unhandled exception: {e}")
