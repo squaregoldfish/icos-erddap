@@ -171,8 +171,8 @@ def get_pids_with_status(conn):
             dataset = dict()
             dataset["pid"] = record[0]
             dataset["new"] = bool(record[1])
-            dataset["update"] = bool(record[2])
-            dataset["delete"] = bool(record[3])
+            dataset["updated"] = bool(record[2])
+            dataset["deleted"] = bool(record[3])
 
             result.append(dataset)
 
@@ -193,6 +193,39 @@ def get_filename(conn, pid):
 
         metadata = json.loads(record[0])
         return metadata["data_object"]["fileName"]
+    finally:
+        c.close()
+
+
+def write_datasets_xml(conn, pid, xml):
+    """
+    Set the datasets erddap entry for a PID, and clear the "Updated" flag
+    """
+    logging.info(f"Writing datasets.xml entry for {pid}")
+    c = conn.cursor()
+    try:
+        c.execute("UPDATE data_object SET datasets_xml = ?, updated = 0 WHERE id = ?", [xml, pid])
+        if c.rowcount == 0:
+            raise ValueError(f"PID {pid} not in database")
+    finally:
+        c.close()
+
+def get_datasets_xml(conn):
+    c = conn.cursor()
+    try:
+        xml = ""
+        c.execute("SELECT datasets_xml, deleted FROM data_object ORDER BY id")
+        records = c.fetchall()
+        for record in records:
+            record_xml = record[0]
+
+            # If the PID is deleted, update the erddap accordingly
+            if record[1] == 1:
+                record_xml = record_xml.replace('active="true"', 'active="false"')
+
+            xml += record_xml
+
+        return xml
     finally:
         c.close()
 

@@ -24,6 +24,9 @@ def get_all_data_object_ids():
     VALUES ?spec {{ {_DATA_TYPES} }}
     ?dobj cpmeta:hasObjectSpec ?spec .
     ?dobj cpmeta:hasSizeInBytes ?size .
+   	?dobj cpmeta:hasName ?fileName .
+   	FILTER (!CONTAINS(str(?fileName), "SOCAT"))
+    FILTER NOT EXISTS {{[] cpmeta:isNextVersionOf ?dobj}}
     }}
     """
 

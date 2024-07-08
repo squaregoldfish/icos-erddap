@@ -23,6 +23,7 @@ def main(config):
 
             # Get the list of all data objects in the Carbon Portal
             cp_pids = sorted(icos.get_all_data_object_ids())
+            print(len(cp_pids))
 
             for pid in cp_pids:
                 if not database.is_in_db(db, pid):

@@ -1,0 +1,837 @@
+<dataset type="EDDTableFromAsciiFiles" datasetID="tPOxlKYSJkTVHhTxeCyGLlsF_0dac_f4ea_7edd" active="true">
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <updateEveryNMillis>10000</updateEveryNMillis>
+    <fileDir>/home/debian/erddap/incoming/tPOxlKYSJkTVHhTxeCyGLlsF/</fileDir>
+    <fileNameRegex>.*\.csv</fileNameRegex>
+    <recursive>true</recursive>
+    <pathRegex>.*</pathRegex>
+    <metadataFrom>last</metadataFrom>
+    <standardizeWhat>0</standardizeWhat>
+    <charset>UTF-8</charset>
+    <columnSeparator>,</columnSeparator>
+    <columnNamesRow>1</columnNamesRow>
+    <firstDataRow>2</firstDataRow>
+    <sortedColumnSourceName>Date/Time</sortedColumnSourceName>
+    <sortFilesBySourceNames>Date/Time</sortFilesBySourceNames>
+    <fileTableInMemory>false</fileTableInMemory>
+    <!-- sourceAttributes>
+    </sourceAttributes -->
+    <!-- Please specify the actual cdm_data_type (TimeSeries?) and related info below, for example...
+        <att name="cdm_timeseries_variables">station_id, longitude, latitude</att>
+        <att name="subsetVariables">station_id, longitude, latitude</att>
+    -->
+    <addAttributes>
+        <att name="cdm_data_type">Point</att>
+        <att name="Conventions">COARDS, CF-1.6, ACDD-1.3</att>
+        <att name="infoUrl">???</att>
+        <att name="institution">???</att>
+        <att name="keywords">altimetry, atm, atmosphere, atmospheric, Atmospheric_Temperature, Atmospheric_Temperature_degC_QC_Comment, Atmospheric_Temperature_degC_QC_Flag, Atmospheric_Temperature_degC_Type, carbon, carbon dioxide, cell, Cell_Gas_Pressure, Cell_Gas_Pressure_QC_Comment, Cell_Gas_Pressure_QC_Flag, Cell_Gas_Pressure_Type, co2, comment, count, co?, current, data, date, date/time, depth, Depth_m_QC_Comment, Depth_m_QC_Flag, Depth_m_Type, dioxide, fCO2, fCO2_in_atmosphere, fCO2_in_atmosphere_uatm_QC_Comment, fCO2_in_atmosphere_uatm_QC_Flag, fCO2_uatm_QC_Comment, fCO2_uatm_QC_Flag, flag, gas, humidity, Humidity_Pressure, Humidity_Pressure_QC_Comment, Humidity_Pressure_QC_Flag, Humidity_Pressure_Type, laboratory, latitude, Latitude_QC_Comment, Latitude_QC_Flag, Latitude_Type, local, longitude, Longitude_QC_Comment, Longitude_QC_Flag, Longitude_Type, meteorology, mol, mol-1, oceanus, P_sal, P_sal_psu_QC_Comment, P_sal_psu_QC_Flag, P_sal_psu_Type, pCO2, pCO2_in_atmosphere, pCO2_in_atmosphere_uatm_QC_Comment, pCO2_in_atmosphere_uatm_QC_Flag, pCO2_uatm_QC_Comment, pCO2_uatm_QC_Flag, practical, pressure, pro, ProOceanus_Current_Count, ProOceanus_Current_Count_QC_Comment, ProOceanus_Current_Count_QC_Flag, ProOceanus_Current_Count_Type, ProOceanus_Zero_Count, ProOceanus_Zero_Count_QC_Comment, ProOceanus_Zero_Count_QC_Flag, ProOceanus_Zero_Count_Type, psu, quality, sal, salinity, satellite, source, statistics, Temp, Temp_degC_QC_Comment, Temp_degC_QC_Flag, Temp_degC_Type, temperature, time, type, uatm, umol, unit, water, xCO2_in_atmosphere, xCO2_in_atmosphere_umol_mol_1_QC_Comment, xCO2_in_atmosphere_umol_mol_1_QC_Flag, xCO_atm, xCO_atm_QC_Comment, xCO_atm_QC_Flag, xCO_atm_Type, xCO_water, xCO_water_QC_Comment, xCO_water_QC_Flag, xCO_water_Type, zero</att>
+        <att name="license">[standard]</att>
+        <att name="sourceUrl">(local files)</att>
+        <att name="standard_name_vocabulary">CF Standard Name Table v70</att>
+        <att name="subsetVariables">Longitude_QC_Comment, Latitude_QC_Comment, depth, Depth_m_QC_Flag, Depth_m_QC_Comment, Depth_m_Type, Temp_degC_QC_Comment, P_sal_psu_QC_Comment, Cell_Gas_Pressure_QC_Flag, Cell_Gas_Pressure_QC_Comment, Humidity_Pressure_QC_Comment, Humidity_Pressure_Type, xCO_water, xCO_water_QC_Flag, xCO_water_QC_Comment, xCO_water_Type, xCO_atm, xCO_atm_QC_Flag, xCO_atm_QC_Comment, xCO_atm_Type, ProOceanus_Current_Count_QC_Flag, ProOceanus_Current_Count_QC_Comment, ProOceanus_Current_Count_Type, ProOceanus_Zero_Count_QC_Flag, ProOceanus_Zero_Count_QC_Comment, ProOceanus_Zero_Count_Type</att>
+        <att name="summary">Data from a local source.</att>
+        <att name="title">Data from a local source.</att>
+    </addAttributes>
+    <dataVariable>
+        <sourceName>Date/Time</sourceName>
+        <destinationName>time</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Time</att>
+            <att name="long_name">Date/Time</att>
+            <att name="source_name">Date/Time</att>
+            <att name="standard_name">time</att>
+            <att name="time_precision">1970-01-01T00:00:00.000Z</att>
+            <att name="units">yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSS&#39;Z&#39;</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Longitude</sourceName>
+        <destinationName>longitude</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="colorBarMaximum" type="double">180.0</att>
+            <att name="colorBarMinimum" type="double">-180.0</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Longitude</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Longitude QC Flag</sourceName>
+        <destinationName>Longitude_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Longitude</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Longitude QC Comment</sourceName>
+        <destinationName>Longitude_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Longitude</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Longitude Type</sourceName>
+        <destinationName>Longitude_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Longitude</att>
+            <att name="standard_name">longitude</att>
+            <att name="units">degrees_east</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Latitude</sourceName>
+        <destinationName>latitude</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="colorBarMaximum" type="double">90.0</att>
+            <att name="colorBarMinimum" type="double">-90.0</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Latitude</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Latitude QC Flag</sourceName>
+        <destinationName>Latitude_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Latitude</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Latitude QC Comment</sourceName>
+        <destinationName>Latitude_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Latitude</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Latitude Type</sourceName>
+        <destinationName>Latitude_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Latitude</att>
+            <att name="standard_name">latitude</att>
+            <att name="units">degrees_north</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Depth [m]</sourceName>
+        <destinationName>depth</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">8000.0</att>
+            <att name="colorBarMinimum" type="double">-8000.0</att>
+            <att name="colorBarPalette">TopographyDepth</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Depth</att>
+            <att name="source_name">Depth [m]</att>
+            <att name="standard_name">depth</att>
+            <att name="units">m</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Depth [m] QC Flag</sourceName>
+        <destinationName>Depth_m_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Depth</att>
+            <att name="standard_name">depth</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Depth [m] QC Comment</sourceName>
+        <destinationName>Depth_m_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Depth</att>
+            <att name="standard_name">depth</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Depth [m] Type</sourceName>
+        <destinationName>Depth_m_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">Depth</att>
+            <att name="standard_name">depth</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Temp [degC]</sourceName>
+        <destinationName>Temp</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Temp [deg C]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Temp [degC] QC Flag</sourceName>
+        <destinationName>Temp_degC_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Temp [deg C] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Temp [degC] QC Comment</sourceName>
+        <destinationName>Temp_degC_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Temp [deg C] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Temp [degC] Type</sourceName>
+        <destinationName>Temp_degC_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Unknown</att>
+            <att name="long_name">Temp [deg C] Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>P_sal [psu]</sourceName>
+        <destinationName>P_sal</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">Salinity</att>
+            <att name="long_name">P Sal [psu]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>P_sal [psu] QC Flag</sourceName>
+        <destinationName>P_sal_psu_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P Sal [psu] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>P_sal [psu] QC Comment</sourceName>
+        <destinationName>P_sal_psu_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P Sal [psu] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>P_sal [psu] Type</sourceName>
+        <destinationName>P_sal_psu_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Salinity</att>
+            <att name="long_name">P Sal [psu] Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Cell Gas Pressure</sourceName>
+        <destinationName>Cell_Gas_Pressure</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Pressure</att>
+            <att name="long_name">Cell Gas Pressure</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Cell Gas Pressure QC Flag</sourceName>
+        <destinationName>Cell_Gas_Pressure_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Cell Gas Pressure QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Cell Gas Pressure QC Comment</sourceName>
+        <destinationName>Cell_Gas_Pressure_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Cell Gas Pressure QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Cell Gas Pressure Type</sourceName>
+        <destinationName>Cell_Gas_Pressure_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Pressure</att>
+            <att name="long_name">Cell Gas Pressure Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Humidity Pressure</sourceName>
+        <destinationName>Humidity_Pressure</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">Meteorology</att>
+            <att name="long_name">Humidity Pressure</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Humidity Pressure QC Flag</sourceName>
+        <destinationName>Humidity_Pressure_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Humidity Pressure QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Humidity Pressure QC Comment</sourceName>
+        <destinationName>Humidity_Pressure_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Humidity Pressure QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Humidity Pressure Type</sourceName>
+        <destinationName>Humidity_Pressure_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Meteorology</att>
+            <att name="long_name">Humidity Pressure Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? water</sourceName>
+        <destinationName>xCO_water</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="double">NaN</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">X CO? Water</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? water QC Flag</sourceName>
+        <destinationName>xCO_water_QC_Flag</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO? Water QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? water QC Comment</sourceName>
+        <destinationName>xCO_water_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO? Water QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? water Type</sourceName>
+        <destinationName>xCO_water_Type</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">X CO? Water Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? atm</sourceName>
+        <destinationName>xCO_atm</destinationName>
+        <dataType>double</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="double">NaN</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">X CO? Atm</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? atm QC Flag</sourceName>
+        <destinationName>xCO_atm_QC_Flag</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO? Atm QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? atm QC Comment</sourceName>
+        <destinationName>xCO_atm_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO? Atm QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO? atm Type</sourceName>
+        <destinationName>xCO_atm_Type</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="ioos_category">Location</att>
+            <att name="long_name">X CO? Atm Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Atmospheric Temperature [degC]</sourceName>
+        <destinationName>Atmospheric_Temperature</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Atmospheric Temperature [deg C]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Atmospheric Temperature [degC] QC Flag</sourceName>
+        <destinationName>Atmospheric_Temperature_degC_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Atmospheric Temperature [deg C] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Atmospheric Temperature [degC] QC Comment</sourceName>
+        <destinationName>Atmospheric_Temperature_degC_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">Atmospheric Temperature [deg C] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>Atmospheric Temperature [degC] Type</sourceName>
+        <destinationName>Atmospheric_Temperature_degC_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Temperature</att>
+            <att name="long_name">Atmospheric Temperature [deg C] Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Current Count</sourceName>
+        <destinationName>ProOceanus_Current_Count</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">100.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Current Count</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Current Count QC Flag</sourceName>
+        <destinationName>ProOceanus_Current_Count_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">100.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Current Count QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Current Count QC Comment</sourceName>
+        <destinationName>ProOceanus_Current_Count_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Current Count QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Current Count Type</sourceName>
+        <destinationName>ProOceanus_Current_Count_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Current Count Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Zero Count</sourceName>
+        <destinationName>ProOceanus_Zero_Count</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="colorBarMaximum" type="double">100.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Zero Count</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Zero Count QC Flag</sourceName>
+        <destinationName>ProOceanus_Zero_Count_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">100.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Zero Count QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Zero Count QC Comment</sourceName>
+        <destinationName>ProOceanus_Zero_Count_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Zero Count QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>ProOceanus Zero Count Type</sourceName>
+        <destinationName>ProOceanus_Zero_Count_Type</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Statistics</att>
+            <att name="long_name">Pro Oceanus Zero Count Type</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 [uatm]</sourceName>
+        <destinationName>pCO2</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">CO2</att>
+            <att name="long_name">P CO2 [uatm]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 [uatm] QC Flag</sourceName>
+        <destinationName>pCO2_uatm_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P CO2 [uatm] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 [uatm] QC Comment</sourceName>
+        <destinationName>pCO2_uatm_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P CO2 [uatm] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 [uatm]</sourceName>
+        <destinationName>fCO2</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">CO2</att>
+            <att name="long_name">F CO2 [uatm]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 [uatm] QC Flag</sourceName>
+        <destinationName>fCO2_uatm_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">F CO2 [uatm] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 [uatm] QC Comment</sourceName>
+        <destinationName>fCO2_uatm_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">F CO2 [uatm] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO2 in atmosphere [umol mol-1]</sourceName>
+        <destinationName>xCO2_in_atmosphere</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">CO2</att>
+            <att name="long_name">X CO2 In Atmosphere [umol Mol-1]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO2 in atmosphere [umol mol-1] QC Flag</sourceName>
+        <destinationName>xCO2_in_atmosphere_umol_mol_1_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO2 In Atmosphere [umol Mol-1] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>xCO2 in atmosphere [umol mol-1] QC Comment</sourceName>
+        <destinationName>xCO2_in_atmosphere_umol_mol_1_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">X CO2 In Atmosphere [umol Mol-1] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 in atmosphere [uatm]</sourceName>
+        <destinationName>pCO2_in_atmosphere</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">CO2</att>
+            <att name="long_name">P CO2 In Atmosphere [uatm]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 in atmosphere [uatm] QC Flag</sourceName>
+        <destinationName>pCO2_in_atmosphere_uatm_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P CO2 In Atmosphere [uatm] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>pCO2 in atmosphere [uatm] QC Comment</sourceName>
+        <destinationName>pCO2_in_atmosphere_uatm_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">P CO2 In Atmosphere [uatm] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 in atmosphere [uatm]</sourceName>
+        <destinationName>fCO2_in_atmosphere</destinationName>
+        <dataType>float</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="float">NaN</att>
+            <att name="ioos_category">CO2</att>
+            <att name="long_name">F CO2 In Atmosphere [uatm]</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 in atmosphere [uatm] QC Flag</sourceName>
+        <destinationName>fCO2_in_atmosphere_uatm_QC_Flag</destinationName>
+        <dataType>byte</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="_FillValue" type="byte">127</att>
+            <att name="colorBarMaximum" type="double">150.0</att>
+            <att name="colorBarMinimum" type="double">0.0</att>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">F CO2 In Atmosphere [uatm] QC Flag</att>
+        </addAttributes>
+    </dataVariable>
+    <dataVariable>
+        <sourceName>fCO2 in atmosphere [uatm] QC Comment</sourceName>
+        <destinationName>fCO2_in_atmosphere_uatm_QC_Comment</destinationName>
+        <dataType>String</dataType>
+        <!-- sourceAttributes>
+        </sourceAttributes -->
+        <addAttributes>
+            <att name="ioos_category">Quality</att>
+            <att name="long_name">F CO2 In Atmosphere [uatm] QC Comment</att>
+        </addAttributes>
+    </dataVariable>
+</dataset>

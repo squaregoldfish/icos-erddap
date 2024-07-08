@@ -1,0 +1,15 @@
+Source Name,Destination,Data Type,Units,IOOS Category,Long Name,Standard Name,Colour Bar Min,Colour Bar Max,Fill Value,Other Attributes
+Date/Time,time,String,yyyy-MM-dd&#39;T&#39;HH:mm:ss.SSS&#39;Z&#39;,Time,Date/Time,time,,,,time_precision:=1970-01-01T00:00:00.000Z
+Longitude,longitude,float,degrees_east,Location,Longitude,longitude,-180,180,,
+Latitude,latitude,float,degrees_north,Location,Latitude,latitude,-90,90,,
+Depth [m],depth,float,m,Location,Depth,depth,0,15,,
+Temp [degC],temp,float,degree_Celsius,Temperature,Sea Water Temperature,sea_water_temperature,-5,40,NaN,
+P_sal [psu],sal,float,1,Salinity,Sea Water Salinity,sea_water_salinity,0,38,NaN,
+Temperature of Equilibration [degC],Temperature_equi,float,degree_Celsius,Temperature,Equilibrator Temperature,temperature_of_analysis_of_sea_water,0,40,NaN,
+Equilibrator Pressure,Pressure_equi,float,hPa,Pressure,Equilibrator Pressure,,980,1020,NaN,
+xCO2 In Water - Calibrated In Dry Air [umol mol-1],xCO2_water_equi_temp_dry,float,umol/mol,CO2,water xCO2 dry using equi temp,mole_fraction_of_carbon_dioxide_in_sea_water,350,1200,NaN,
+pCO2 [uatm],pCO2_water_sst_wet,float,uatm,CO2,water pCO2 wet using sst,surface_partial_pressure_of_carbon_dioxide_in_sea_water,350,1200,NaN,
+fCO2 [uatm],fCO2_water_sst,float,uatm,CO2,water fCO2 wet using sst,fugacity_of_carbon_dioxide_in_sea_water,350,1200,NaN,
+xCO2 In Atmosphere - Calibrated In Dry Air[mol mol - 1],xCO2_atm_dry,float,umol/mol,CO2,xCO2 in air,mole_fraction_of_carbon_dioxide_in_air,350,1200,NaN,
+pCO2 in atmosphere [uatm],pCO2_atm,float,uatm,CO2,pCO2 in air,surface_partial_pressure_of_carbon_dioxide_in_air,350,1200,NaN,
+fCO2 in atmosphere [uatm],fCO2_atm,float,uatm,CO2,fCO2 in air,,350,1200,NaN,
