@@ -24,8 +24,8 @@ STANDARD_NAME_COL = 6
 COLOUR_BAR_MIN_COL = 7
 COLOUR_BAR_MAX_COL = 8
 FILL_VALUE_COL = 9
-SUBSET_COL = 10
-OTHER_ATTRIBUTES_COL = 11
+OTHER_ATTRIBUTES_COL = 10
+
 
 def main(config):
     try:
@@ -62,7 +62,6 @@ def main(config):
                         except Exception:
                             logging.error(f"Failed to build datasets.xml for dataset {dataset["pid"]}")
                             logging.error(traceback.format_exc())
-                            dataset_ok = False
 
             _write_datasets_xml(config, db)
     except Exception as e:
@@ -98,12 +97,14 @@ def _make_soop_entry(pid, metadata, config):
     # Attributes
     entry += '<addAttributes>\n'
     entry += _make_common_attributes(pid, metadata)
-    entry += _make_attribute_xml(Attribute('subsetVariables', _make_subset_variables('soop_variables.csv')))
 
     entry += '</addAttributes>\n'
 
     # Data Variables
     entry += _generate_data_variables_xml('soop_variables.csv')
+
+    entry += _variable_from_global_attribute('expocode', 'EXPOCODE', 'EXPOCODE')
+    entry += _variable_from_global_attribute('platform_id', 'platform_id', 'ICES Platform Code')
 
     # Manually created fixed values
     # _trajectory_id (will be EXPO CODE)
@@ -118,7 +119,6 @@ def _make_fos_entry(pid, metadata, config):
     # Attributes
     entry += '<addAttributes>\n'
     entry += _make_common_attributes(pid, metadata)
-    entry += _make_attribute_xml(Attribute('subsetVariables', _make_subset_variables('fos_variables.csv')))
 
     entry += '</addAttributes>\n'
 
@@ -157,11 +157,14 @@ def _make_common_attributes(pid, metadata):
     common_attributes += _make_attribute_xml(Attribute('institution', 'ICOS RI; TK'))
     common_attributes += _make_attribute_xml(Attribute('keywords', 'TK (from ICOS?)'))
     common_attributes += _make_attribute_xml(Attribute('license',
-                                                       'CC BY 4.0/ICOS Data Licence&lt;br/&gt;https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
+                                                       'CC BY 4.0/ICOS Data Licence: https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
     common_attributes += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
     common_attributes += _make_attribute_xml(Attribute('standard_name_vocabulary', 'CF Standard Name Table v70'))
     common_attributes += _make_attribute_xml(Attribute('summary', 'TK'))
     common_attributes += _make_attribute_xml(Attribute('title', f'TK - {metadata['data_object']['fileName']}'))
+    common_attributes += _make_attribute_xml(
+        Attribute('expocode', f'{metadata['data_object']['fileName'].split(".")[0]}'))
+    common_attributes += _make_attribute_xml(Attribute('platform_id', f'{metadata['data_object']['fileName'][:4]}'))
 
     return common_attributes
 
@@ -204,6 +207,22 @@ def _generate_data_variables_xml(var_file):
     return xml
 
 
+def _variable_from_global_attribute(attribute, destination, long_name):
+    xml = '<dataVariable>\n'
+    xml += f'<sourceName>global:{attribute}</sourceName>\n'
+    xml += f'<destinationName>{destination}</destinationName>\n'
+    xml += '<dataType>String</dataType>\n'
+
+    xml += '<addAttributes>\n'
+    xml += _make_attribute_xml(Attribute('ioos_category', 'Unknown'))
+    xml += _make_attribute_xml(Attribute('long_name', long_name))
+    xml += '</addAttributes>\n'
+
+    xml += '</dataVariable>\n'
+
+    return xml
+
+
 def _make_data_variable_xml(source_name, destination_name, data_type, units, ioos_category, long_name,
                             standard_name, other_attributes):
     xml = '<dataVariable>\n'
@@ -236,23 +255,6 @@ def _make_attribute_xml(attribute):
     attr += f'>{attribute.value}</att>\n'
 
     return attr
-
-
-def _make_subset_variables(var_file):
-    subsets = list()
-
-    with open(f'erddap/{var_file}') as var_in:
-        # Skip the first line - it's a header
-        var_in.readline()
-
-        fields = var_in.readline().split(',')
-        while len(fields) > 1:
-            if fields[SUBSET_COL] == 'true':
-                subsets.append(fields[DESTINATION_COL])
-
-            fields = var_in.readline().split(',')
-
-    return ','.join(subsets)
 
 
 def _write_datasets_xml(config, db):
