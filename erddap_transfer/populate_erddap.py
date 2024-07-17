@@ -13,6 +13,19 @@ from Attribute import Attribute
 
 _LOG_FILE_ = "populate_erddap.log"
 
+# VARIABLE COLUMN IDs
+SOURCE_NAME_COL = 0
+DESTINATION_COL = 1
+DATA_TYPE_COL = 2
+UNITS_COL = 3
+IOOS_CATEGORY_COL = 4
+LONG_NAME_COL = 5
+STANDARD_NAME_COL = 6
+COLOUR_BAR_MIN_COL = 7
+COLOUR_BAR_MAX_COL = 8
+FILL_VALUE_COL = 9
+SUBSET_COL = 10
+OTHER_ATTRIBUTES_COL = 11
 
 def main(config):
     try:
@@ -79,37 +92,13 @@ def _make_datasets_xml_entry(db, pid):
 
 
 def _make_soop_entry(pid, metadata, config):
-    # Base setup
-    entry = '<reloadEveryNMinutes>10080</reloadEveryNMinutes>\n'
-    entry += '<updateEveryNMillis>10000</updateEveryNMillis>\n'
-    entry += f'<fileDir>{os.path.join(config['datasets_dir'], pid)}</fileDir>\n'
-    entry += '<fileNameRegex>.*\\.csv</fileNameRegex>\n'
-    entry += '<recursive>false</recursive>\n'
-    entry += '<pathRegex>.*</pathRegex>\n'
-    entry += '<metadataFrom>last</metadataFrom>\n'
-    entry += '<standardizeWhat>0</standardizeWhat>\n'
-    entry += '<charset>UTF-8</charset>\n'
-    entry += '<columnSeparator>,</columnSeparator>\n'
-    entry += '<columnNamesRow>1</columnNamesRow>\n'
-    entry += '<firstDataRow>2</firstDataRow>\n'
-    entry += '<sortedColumnSourceName>Date/Time</sortedColumnSourceName>\n'
-    entry += '<sortFilesBySourceNames>Date/Time</sortFilesBySourceNames>\n'
-    entry += '<fileTableInMemory>false</fileTableInMemory>\n'
+    # Common base details
+    entry = _make_common_base(pid, config)
 
     # Attributes
     entry += '<addAttributes>\n'
-    entry += _make_attribute_xml(Attribute('cdm_data_type', 'Point'))
-    entry += _make_attribute_xml(Attribute('Conventions', 'COARDS, CF-1.6, ACDD-1.3'))
-    entry += _make_attribute_xml(Attribute('infoUrl', icos.make_data_object_uri(pid)))
-    entry += _make_attribute_xml(Attribute('institution', 'ICOS RI; TK'))
-    entry += _make_attribute_xml(Attribute('keywords', 'TK (from ICOS?)'))
-    entry += _make_attribute_xml(Attribute('license',
-                                           'CC BY 4.0/ICOS Data Licence&lt;br/&gt;https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
-    entry += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
-    entry += _make_attribute_xml(Attribute('standard_name_vocabulary', 'CF Standard Name Table v70'))
-    entry += _make_attribute_xml(Attribute('subsetVariables', '<!--TK-->'))
-    entry += _make_attribute_xml(Attribute('summary', 'TK'))
-    entry += _make_attribute_xml(Attribute('title', f'TK - {metadata['data_object']['fileName']}'))
+    entry += _make_common_attributes(pid, metadata)
+    entry += _make_attribute_xml(Attribute('subsetVariables', _make_subset_variables('soop_variables.csv')))
 
     entry += '</addAttributes>\n'
 
@@ -123,11 +112,61 @@ def _make_soop_entry(pid, metadata, config):
 
 
 def _make_fos_entry(pid, metadata, config):
-    return "<!--FOS-->\n"
+    # Common base details
+    entry = _make_common_base(pid, config)
+
+    # Attributes
+    entry += '<addAttributes>\n'
+    entry += _make_common_attributes(pid, metadata)
+    entry += _make_attribute_xml(Attribute('subsetVariables', _make_subset_variables('fos_variables.csv')))
+
+    entry += '</addAttributes>\n'
+
+    # Data Variables
+    entry += _generate_data_variables_xml('fos_variables.csv')
+
+    # Manually created fixed values
+    # _trajectory_id (will be EXPO CODE)
+
+    return entry
+
+
+def _make_common_base(pid, config):
+    base = '<reloadEveryNMinutes>10080</reloadEveryNMinutes>\n'
+    base += '<updateEveryNMillis>10000</updateEveryNMillis>\n'
+    base += f'<fileDir>{os.path.join(config['datasets_dir'], pid)}</fileDir>\n'
+    base += '<fileNameRegex>.*\\.csv</fileNameRegex>\n'
+    base += '<recursive>false</recursive>\n'
+    base += '<pathRegex>.*</pathRegex>\n'
+    base += '<metadataFrom>last</metadataFrom>\n'
+    base += '<standardizeWhat>0</standardizeWhat>\n'
+    base += '<charset>UTF-8</charset>\n'
+    base += '<columnSeparator>,</columnSeparator>\n'
+    base += '<columnNamesRow>1</columnNamesRow>\n'
+    base += '<firstDataRow>2</firstDataRow>\n'
+    base += '<sortedColumnSourceName>Date/Time</sortedColumnSourceName>\n'
+    base += '<sortFilesBySourceNames>Date/Time</sortFilesBySourceNames>\n'
+    base += '<fileTableInMemory>false</fileTableInMemory>\n'
+    return base
+
+
+def _make_common_attributes(pid, metadata):
+    common_attributes = _make_attribute_xml(Attribute('cdm_data_type', 'Point'))
+    common_attributes += _make_attribute_xml(Attribute('Conventions', 'COARDS, CF-1.6, ACDD-1.3'))
+    common_attributes += _make_attribute_xml(Attribute('infoUrl', icos.make_data_object_uri(pid)))
+    common_attributes += _make_attribute_xml(Attribute('institution', 'ICOS RI; TK'))
+    common_attributes += _make_attribute_xml(Attribute('keywords', 'TK (from ICOS?)'))
+    common_attributes += _make_attribute_xml(Attribute('license',
+                                                       'CC BY 4.0/ICOS Data Licence&lt;br/&gt;https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
+    common_attributes += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
+    common_attributes += _make_attribute_xml(Attribute('standard_name_vocabulary', 'CF Standard Name Table v70'))
+    common_attributes += _make_attribute_xml(Attribute('summary', 'TK'))
+    common_attributes += _make_attribute_xml(Attribute('title', f'TK - {metadata['data_object']['fileName']}'))
+
+    return common_attributes
 
 
 def _generate_data_variables_xml(var_file):
-
     xml = ''
 
     with open(f'erddap/{var_file}') as var_in:
@@ -137,15 +176,15 @@ def _generate_data_variables_xml(var_file):
         fields = var_in.readline().split(',')
         while len(fields) > 1:
             attributes = list()
-            if len(fields[7]) > 0:
-                attributes.append(Attribute('colorBarMinimum', fields[7], 'float'))
-            if len(fields[8]) > 0:
-                attributes.append(Attribute('colorBarMaximum', fields[8], 'float'))
-            if len(fields[9]) > 0:
-                attributes.append(Attribute('_FillValue', fields[9]))
+            if len(fields[COLOUR_BAR_MIN_COL]) > 0:
+                attributes.append(Attribute('colorBarMinimum', fields[COLOUR_BAR_MIN_COL], 'float'))
+            if len(fields[COLOUR_BAR_MAX_COL]) > 0:
+                attributes.append(Attribute('colorBarMaximum', fields[COLOUR_BAR_MAX_COL], 'float'))
+            if len(fields[FILL_VALUE_COL]) > 0:
+                attributes.append(Attribute('_FillValue', fields[FILL_VALUE_COL]))
 
-            if len(fields[10].strip()) > 0:
-                other_attrs = fields[10].strip().split(';')
+            if len(fields[OTHER_ATTRIBUTES_COL].strip()) > 0:
+                other_attrs = fields[OTHER_ATTRIBUTES_COL].strip().split(';')
                 for attr in other_attrs:
                     m = re.search('(.*):(.*)=(.*)', attr)
                     if not m:
@@ -156,13 +195,15 @@ def _generate_data_variables_xml(var_file):
                     else:
                         attributes.append(Attribute(attr_name, attr_value, attr_type))
 
-            xml += _make_data_variable_xml(fields[0], fields[1], fields[2], fields[3], fields[4], fields[5],
-                                           fields[6], attributes)
+            xml += _make_data_variable_xml(fields[SOURCE_NAME_COL], fields[DESTINATION_COL], fields[DATA_TYPE_COL],
+                                           fields[UNITS_COL], fields[IOOS_CATEGORY_COL], fields[LONG_NAME_COL],
+                                           fields[STANDARD_NAME_COL], attributes)
 
             fields = var_in.readline().split(',')
 
-
     return xml
+
+
 def _make_data_variable_xml(source_name, destination_name, data_type, units, ioos_category, long_name,
                             standard_name, other_attributes):
     xml = '<dataVariable>\n'
@@ -197,6 +238,23 @@ def _make_attribute_xml(attribute):
     return attr
 
 
+def _make_subset_variables(var_file):
+    subsets = list()
+
+    with open(f'erddap/{var_file}') as var_in:
+        # Skip the first line - it's a header
+        var_in.readline()
+
+        fields = var_in.readline().split(',')
+        while len(fields) > 1:
+            if fields[SUBSET_COL] == 'true':
+                subsets.append(fields[DESTINATION_COL])
+
+            fields = var_in.readline().split(',')
+
+    return ','.join(subsets)
+
+
 def _write_datasets_xml(config, db):
     with open(config['datasets_xml_location'], 'w') as out:
         # Write the erddap preamble and open root node
@@ -207,7 +265,7 @@ def _write_datasets_xml(config, db):
         with open('erddap/datasets_xml_start.xml', 'r') as start:
             out.write(start.read())
 
-        # Add the erddap for the datasets
+        # Add the xml for the datasets
         out.write(database.get_datasets_xml(db))
 
         # Copy the contents of the end template into the file
