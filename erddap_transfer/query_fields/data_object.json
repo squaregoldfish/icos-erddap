@@ -2,16 +2,31 @@
   {
     "iri": "cpmeta:hasObjectSpec",
     "name": "spec",
-    "type": "uri"
+    "type": "uri",
+    "optional": false
   },
   {
     "iri": "cpmeta:hasNumberOfRows",
     "name": "rows",
-    "type": "value"
+    "type": "value",
+    "optional": true
   },
   {
     "iri": "cpmeta:hasName",
     "name": "fileName",
-    "type": "value"
+    "type": "value",
+    "optional": false
+  },
+  {
+    "iri": "cpmeta:hasCitationString",
+    "name": "citation",
+    "type": "value",
+    "optional": true
+  },
+  {
+    "iri": "cpmeta:hasKeywords",
+    "name": "keywords",
+    "type": "value",
+    "optional": true
   }
 ]

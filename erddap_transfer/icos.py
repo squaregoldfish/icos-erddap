@@ -5,7 +5,6 @@ import logging
 import json
 from icoscp_core.icos import meta
 
-
 # The ICOS Data Object Specs we're interested in
 _DATA_TYPES = """
     <http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product>
@@ -13,7 +12,8 @@ _DATA_TYPES = """
 """
 
 _CP_QUERY_PREFIX = """prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
-                 prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"""
+                 prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+                 prefix prov: <http://www.w3.org/ns/prov#>"""
 
 
 def get_all_data_object_ids():
@@ -59,12 +59,11 @@ def get_metadata(pids):
 
 
 def _run_metadata_query(prefix, metadata, fields):
-
     with open(f"query_fields/{fields}.json") as f:
         field_details = json.load(f)
 
     query = f"{prefix}\n"
-    query += "SELECT ?obj"
+    query += "SELECT ?dobj ?station"
 
     for field in field_details:
         query += f" ?{field['name']}"
@@ -72,13 +71,19 @@ def _run_metadata_query(prefix, metadata, fields):
     query += " WHERE {\n"
 
     # Add all PIDs (as URIs)
-    query += "VALUES ?obj { "
+    query += "VALUES ?dobj { "
     for pid in metadata.keys():
         query += f"<{make_data_object_uri(pid)}> "
     query += "}\n"
 
+    # Station - used as the link to OTC metadata
+    query += "?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?station .\n"
+
     for field in field_details:
-        query += f"?obj {field['iri']} ?{field['name']} .\n"
+        if field['optional']:
+            query += f"OPTIONAL {{ ?dobj {field['iri']} ?{field['name']} . }}\n"
+        else:
+            query += f"?dobj {field['iri']} ?{field['name']} .\n"
 
     query += "}"
 
@@ -86,18 +91,24 @@ def _run_metadata_query(prefix, metadata, fields):
 
     query_result = meta.sparql_select(query)
     for record in query_result.bindings:
-        obj_id = pid_from_uri(getattr(record["obj"], "uri"))
+        obj_id = pid_from_uri(getattr(record["dobj"], "uri"))
 
         item_data = dict()
 
         for field in field_details:
-            item_data[field["name"]] = getattr(record[field["name"]], field["type"])
+            if field["name"] in record.keys():
+                item_data[field["name"]] = getattr(record[field["name"]], field["type"])
+
 
         metadata[obj_id][fields] = item_data
+
+        # The station is a special case - it's not meant to be part of the ERDDAP metadata
+        metadata[obj_id]["station_uri"] = getattr(record["station"], "uri")
 
 
 def make_data_object_uri(pid):
     return f"https://meta.icos-cp.eu/objects/{pid}"
+
 
 def pid_from_uri(uri):
     return uri.split("/")[-1]
