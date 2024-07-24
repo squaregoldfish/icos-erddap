@@ -14,6 +14,12 @@ from Attribute import Attribute
 
 _LOG_FILE_ = "populate_erddap.log"
 
+_SPEC_TO_STRING = {
+    "http://meta.icos-cp.eu/resources/cpmeta/icosOtcL2Product": "SOOP",
+    "http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product": "FOS"
+}
+
+
 # VARIABLE COLUMN IDs
 SOURCE_NAME_COL = 0
 DESTINATION_COL = 1
@@ -99,6 +105,15 @@ def _make_soop_entry(pid, metadata, config):
     entry += '<addAttributes>\n'
     entry += _make_common_attributes(pid, metadata, 'Trajectory')
     entry += _make_attribute_xml(Attribute('cdm_trajectory_variables', 'expocode'))
+
+    # Make attributes from metadata in SQLite. Need a config file to
+    # (a?) Map metadata entries to attribute names.
+    # (b) Determine which attributes we copy, and which we don't.
+    # (C) What about multiple links, i.e. to sensors? See what we get and decide how to deal with it.
+    #
+    # In theory this should be the same for both FOS and SOOP - the metadata in SQLite will have
+    # everything and we just need to add it if it's there. Some will be TOP LEVEL and some will be NOT ADDED,
+    # which need to be configured.
     entry += '</addAttributes>\n'
 
     # Data Variables
@@ -148,15 +163,17 @@ def _make_common_attributes(pid, metadata, cdm_data_type):
     common_attributes = _make_attribute_xml(Attribute('cdm_data_type', cdm_data_type))
     common_attributes += _make_attribute_xml(Attribute('Conventions', 'COARDS, CF-1.6, ACDD-1.3'))
     common_attributes += _make_attribute_xml(Attribute('infoUrl', icos.make_data_object_uri(pid)))
-    common_attributes += _make_attribute_xml(Attribute('institution', 'ICOS RI; TK'))
+    common_attributes += _make_attribute_xml(Attribute('institution',
+                                                       f'ICOS RI; {html.escape(metadata['station']['responsibleOrgName'])}'))
     common_attributes += _make_attribute_xml(Attribute('keywords', 'TK (from ICOS?)'))
     common_attributes += _make_attribute_xml(Attribute('license',
                                                        'CC BY 4.0/ICOS Data Licence: https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
     common_attributes += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
     common_attributes += _make_attribute_xml(Attribute('standard_name_vocabulary', 'CF Standard Name Table v70'))
-    common_attributes += _make_attribute_xml(Attribute('summary', 'TK'))
+    common_attributes += _make_attribute_xml(Attribute('summary',
+                                                       f'ICOS OTC {_SPEC_TO_STRING[metadata["data_object"]["spec"]]} Release from {html.escape(metadata["station"]["stationName"])}'))
     common_attributes += _make_attribute_xml(
-        Attribute('title', f'TK - {html.escape(metadata['data_object']['fileName'])}'))
+        Attribute('title', f'{html.escape(metadata['station']['stationName'])} - {html.escape(metadata['data_object']['expocode'])}'))
     common_attributes += _make_attribute_xml(
         Attribute('citation', f'{html.escape(metadata['data_object']['citation'])}'))
 

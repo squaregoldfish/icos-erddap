@@ -1,0 +1,23 @@
+{
+  "iris": [
+    {
+      "predicate": "otcmeta:hasName",
+      "object": "stationName",
+      "type": "value",
+      "optional": false
+    },
+    {
+      "predicate": "otcmeta:hasResponsibleOrg",
+      "object": "responsibleOrgId",
+      "type": "uri",
+      "optional": true
+    },
+    {
+      "subject": "responsibleOrgId",
+      "predicate": "otcmeta:hasName",
+      "object": "responsibleOrgName",
+      "type": "value",
+      "optional": true
+    }
+  ]
+}

@@ -1,32 +1,59 @@
-[
-  {
-    "iri": "cpmeta:hasObjectSpec",
-    "name": "spec",
-    "type": "uri",
-    "optional": false
-  },
-  {
-    "iri": "cpmeta:hasNumberOfRows",
-    "name": "rows",
-    "type": "value",
-    "optional": true
-  },
-  {
-    "iri": "cpmeta:hasName",
-    "name": "fileName",
-    "type": "value",
-    "optional": false
-  },
-  {
-    "iri": "cpmeta:hasCitationString",
-    "name": "citation",
-    "type": "value",
-    "optional": true
-  },
-  {
-    "iri": "cpmeta:hasKeywords",
-    "name": "keywords",
-    "type": "value",
-    "optional": true
-  }
-]
+{
+  "iris": [
+    {
+      "predicate": "cpmeta:hasObjectSpec",
+      "object": "spec",
+      "type": "uri",
+      "optional": false
+    },
+    {
+      "predicate": "cpmeta:hasNumberOfRows",
+      "object": "rows",
+      "type": "value",
+      "optional": true
+    },
+    {
+      "predicate": "cpmeta:hasName",
+      "object": "fileName",
+      "type": "value",
+      "optional": false
+    },
+    {
+      "predicate": "cpmeta:hasCitationString",
+      "object": "citation",
+      "type": "value",
+      "optional": true
+    },
+    {
+      "predicate": "cpmeta:hasKeywords",
+      "object": "keywords",
+      "type": "value",
+      "optional": true
+    },
+    {
+      "predicate": "cpmeta:hasStartTime | (cpmeta:wasAcquiredBy / prov:startedAtTime)",
+      "object": "startTime",
+      "type": "value",
+      "optional": true
+    },
+    {
+      "predicate": "cpmeta:hasEndTime | (cpmeta:wasAcquiredBy / prov:endedAtTime)",
+      "object": "endTime",
+      "type": "value",
+      "optional": true
+    },
+    {
+      "predicate": "cpmeta:wasAcquiredBy/prov:wasAssociatedWith",
+      "object": "stationId",
+      "type": "uri",
+      "optional": false
+    }
+  ],
+  "functions": [
+    {
+      "function": "STRBEFORE(?fileName, \".csv\")",
+      "object": "expocode",
+      "type": "value"
+    }
+  ]
+}

@@ -11,21 +11,28 @@ _DATA_TYPES = """
     <http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product>
 """
 
-_CP_QUERY_PREFIX = """prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+_QUERY_PREFIX = """prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+                 prefix otcmeta: <http://meta.icos-cp.eu/ontologies/otcmeta/>
                  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                  prefix prov: <http://www.w3.org/ns/prov#>"""
+
+_CP_PID_PREFIX = "https://meta.icos-cp.eu/objects/"
+
+_OTC_STATION_ID_PREFIX = "http://meta.icos-cp.eu/resources/otcmeta/"
+
+_OTC_STATION_ID_CACHE = dict()
 
 
 def get_all_data_object_ids():
     logging.debug("Collecting data object IDs")
 
-    query = f"""{_CP_QUERY_PREFIX}
+    query = f"""{_QUERY_PREFIX}
     SELECT ?dobj WHERE {{
     VALUES ?spec {{ {_DATA_TYPES} }}
     ?dobj cpmeta:hasObjectSpec ?spec .
     ?dobj cpmeta:hasSizeInBytes ?size .
-   	?dobj cpmeta:hasName ?fileName .
-   	FILTER (!CONTAINS(str(?fileName), "SOCAT"))
+    ?dobj cpmeta:hasName ?fileName .
+    FILTER (!CONTAINS(str(?fileName), "SOCAT"))
     FILTER NOT EXISTS {{[] cpmeta:isNextVersionOf ?dobj}}
     }}
     """
@@ -37,8 +44,8 @@ def get_all_data_object_ids():
 
     for record in query_result.bindings:
         uri = record["dobj"].uri
-        id = uri.split("/")[-1]
-        result.append(id)
+        pid = uri.split("/")[-1]
+        result.append(pid)
 
     return result
 
@@ -53,61 +60,112 @@ def get_metadata(pids):
     for pid in pids:
         metadata[pid] = {}
 
-    _run_metadata_query(_CP_QUERY_PREFIX, metadata, "data_object")
+    # Get the central data object data
+    _run_all_pids_metadata_query('data_object', metadata)
+
+    for pid in pids:
+        station_pid = _get_otc_station_id(metadata[pid]['data_object']['stationId'])
+        _run_single_pid_metadata_query(pid, station_pid, 'station', metadata)
 
     return metadata
 
 
-def _run_metadata_query(prefix, metadata, fields):
-    with open(f"query_fields/{fields}.json") as f:
+def _run_single_pid_metadata_query(parent_id, pid, subject, metadata):
+    with open(f"query_fields/{subject}.json") as f:
         field_details = json.load(f)
 
-    query = f"{prefix}\n"
-    query += "SELECT ?dobj ?station"
+    values_entry = f"<{pid}>"
 
-    for field in field_details:
-        query += f" ?{field['name']}"
-
-    query += " WHERE {\n"
-
-    # Add all PIDs (as URIs)
-    query += "VALUES ?dobj { "
-    for pid in metadata.keys():
-        query += f"<{make_data_object_uri(pid)}> "
-    query += "}\n"
-
-    # Station - used as the link to OTC metadata
-    query += "?dobj cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?station .\n"
-
-    for field in field_details:
-        if field['optional']:
-            query += f"OPTIONAL {{ ?dobj {field['iri']} ?{field['name']} . }}\n"
-        else:
-            query += f"?dobj {field['iri']} ?{field['name']} .\n"
-
-    query += "}"
-
-    logging.debug(f"""Metadata query for {fields}:\n{query}""")
+    query = _build_query(subject, field_details, values_entry)
 
     query_result = meta.sparql_select(query)
     for record in query_result.bindings:
-        obj_id = pid_from_uri(getattr(record["dobj"], "uri"))
-
-        item_data = dict()
-
-        for field in field_details:
-            if field["name"] in record.keys():
-                item_data[field["name"]] = getattr(record[field["name"]], field["type"])
+        item_data = _read_record(record, field_details)
+        metadata[parent_id][subject] = item_data
 
 
-        metadata[obj_id][fields] = item_data
+def _run_all_pids_metadata_query(subject, metadata):
+    with open(f"query_fields/{subject}.json") as f:
+        field_details = json.load(f)
 
-        # The station is a special case - it's not meant to be part of the ERDDAP metadata
-        metadata[obj_id]["station_uri"] = getattr(record["station"], "uri")
+    values_entry = ""
+    for pid in metadata.keys():
+        values_entry += f"<{make_data_object_uri(pid)}> "
+
+    query = _build_query(subject, field_details, values_entry)
+
+    query_result = meta.sparql_select(query)
+    for record in query_result.bindings:
+        obj_id = pid_from_uri(getattr(record[subject], "uri"))
+        metadata[obj_id][subject] = _read_record(record, field_details)
+
+
+def _build_query(subject, field_details, values_entry):
+    query = f"{_QUERY_PREFIX}\n"
+    query += f"SELECT ?{subject}"
+
+    for field in field_details['iris']:
+        query += f" ?{field['object']}"
+
+    if 'functions' in field_details:
+        for func in field_details['functions']:
+            query += f" ({func['function']} AS ?{func['object']})"
+
+    query += " WHERE {\n"
+    query += f"VALUES ?{subject} {{ {values_entry} }}\n"
+
+    for field in field_details['iris']:
+        if field['optional']:
+            query += "OPTIONAL { "
+
+        query += "?"
+        if 'subject' in field:
+            query += field['subject']
+        else:
+            query += subject
+
+        query += f" {field['predicate']} ?{field['object']} ."
+
+        if field['optional']:
+            query += " }"
+
+        query += "\n"
+
+    query += "}"
+
+    logging.debug(f"""Metadata query for {subject}:\n{query}""")
+    return query
+
+
+def _read_record(record, field_details):
+    item_data = dict()
+
+    for field in field_details['iris']:
+        if field["object"] in record.keys():
+            item_data[field["object"]] = getattr(record[field["object"]], field["type"])
+
+    if 'functions' in field_details:
+        for func in field_details['functions']:
+            if func["object"] in record.keys():
+                item_data[func["object"]] = getattr(record[func["object"]], func["type"])
+
+    return item_data
+
+
+def _get_otc_station_id(cp_station_id):
+    if cp_station_id in _OTC_STATION_ID_CACHE:
+        return _OTC_STATION_ID_CACHE[cp_station_id]
+    else:
+        query = f"{_QUERY_PREFIX}\n"
+        query += f"select * where {{ <{cp_station_id}> cpmeta:hasOtcId ?otcId }}"
+
+        query_result = meta.sparql_select(query)
+        _OTC_STATION_ID_CACHE[cp_station_id] = f'{_OTC_STATION_ID_PREFIX}{query_result.bindings[0]["otcId"].value}'
+        return _OTC_STATION_ID_CACHE[cp_station_id]
 
 
 def make_data_object_uri(pid):
-    return f"https://meta.icos-cp.eu/objects/{pid}"
+    return f"{_CP_PID_PREFIX}{pid}"
 
 
 def pid_from_uri(uri):
