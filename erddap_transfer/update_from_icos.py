@@ -22,9 +22,9 @@ def main(config):
         with database.connect() as db:
 
             # Get the list of all data objects in the Carbon Portal
-            cp_pids = sorted(icos.get_all_data_object_ids())
+            datasets = sorted(icos.get_all_data_object_ids())
 
-            for pid in cp_pids:
+            for (pid, start_date, end_date) in datasets:
                 if not database.is_in_db(db, pid):
                     database.add_pid(db, pid)
                 elif database.is_deleted(db, pid):
@@ -34,13 +34,12 @@ def main(config):
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted
             local_pids = database.get_active_pids(db)
-            newly_deleted_pids = list(set(local_pids) - set(cp_pids))
+            newly_deleted_pids = list(set(local_pids) - set(datasets))
             for pid in newly_deleted_pids:
                 database.mark_deleted(db, pid)
 
-
             # Get the metadata for the PIDs and update if necessary
-            metadata = icos.get_metadata(cp_pids)
+            metadata = icos.get_metadata(datasets)
 
             for pid in metadata.keys():
                 existing_metadata = database.get_metadata(db, pid)

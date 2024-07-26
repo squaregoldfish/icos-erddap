@@ -3,6 +3,8 @@ Functions for communicating with the ICOS Carbon Portal
 """
 import logging
 import json
+from dateutil.parser import isoparse
+from datetime import timedelta
 from icoscp_core.icos import meta
 
 # The ICOS Data Object Specs we're interested in
@@ -14,7 +16,8 @@ _DATA_TYPES = """
 _QUERY_PREFIX = """prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
                  prefix otcmeta: <http://meta.icos-cp.eu/ontologies/otcmeta/>
                  prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-                 prefix prov: <http://www.w3.org/ns/prov#>"""
+                 prefix prov: <http://www.w3.org/ns/prov#>
+                 prefix xsd: <http://www.w3.org/2001/XMLSchema#>"""
 
 _CP_PID_PREFIX = "https://meta.icos-cp.eu/objects/"
 
@@ -24,14 +27,21 @@ _OTC_STATION_ID_CACHE = dict()
 
 
 def get_all_data_object_ids():
-    logging.debug("Collecting data object IDs")
+    """
+    Get the Data Objects that we're interested in, with start and end dates.
+
+    The start time is rounded down to the start of the day, and the end time is rounded up to the next day.
+    """
+    logging.debug("Collecting data object IDs and start/end dates")
 
     query = f"""{_QUERY_PREFIX}
-    SELECT ?dobj WHERE {{
+    SELECT ?dobj ?timeStart ?timeEnd WHERE {{
     VALUES ?spec {{ {_DATA_TYPES} }}
     ?dobj cpmeta:hasObjectSpec ?spec .
     ?dobj cpmeta:hasSizeInBytes ?size .
     ?dobj cpmeta:hasName ?fileName .
+    ?dobj cpmeta:hasStartTime | (cpmeta:wasAcquiredBy / prov:startedAtTime) ?timeStart .
+    ?dobj cpmeta:hasEndTime | (cpmeta:wasAcquiredBy / prov:endedAtTime) ?timeEnd .
     FILTER (!CONTAINS(str(?fileName), "SOCAT"))
     FILTER NOT EXISTS {{[] cpmeta:isNextVersionOf ?dobj}}
     }}
@@ -45,43 +55,65 @@ def get_all_data_object_ids():
     for record in query_result.bindings:
         uri = record["dobj"].uri
         pid = uri.split("/")[-1]
-        result.append(pid)
+
+        start_time = _round_down(isoparse(record['timeStart'].value))
+        end_time = _round_up(isoparse(record['timeEnd'].value))
+
+        result.append((pid, start_time, end_time))
 
     return result
 
 
-def get_metadata(pids):
+def _round_down(time):
+    return time.date()
+
+
+def _round_up(time):
+    return _round_down(time + timedelta(days=1))
+
+
+def get_metadata(datasets):
     """
     Retrieve the complete metadata for a PID as a python dict.
     The dict will be built in sections corresponding to the
     concepts and structures of the ICOS metadata.
     """
     metadata = dict()
-    for pid in pids:
+    for (pid, start_date, end_date) in datasets:
         metadata[pid] = {}
 
     # Get the central data object data
     _run_all_pids_metadata_query('data_object', metadata)
 
-    for pid in pids:
+    for (pid, start_date, end_date) in datasets:
         station_pid = _get_otc_station_id(metadata[pid]['data_object']['stationId'])
-        _run_single_pid_metadata_query(pid, station_pid, 'station', metadata)
+        _run_single_pid_metadata_query(pid, station_pid, 'station', 'station', metadata)
+        _run_single_pid_metadata_query(pid, station_pid, 'station', 'people', metadata, force_array=True,
+                                       start_date=start_date, end_date=end_date)
 
     return metadata
 
 
-def _run_single_pid_metadata_query(parent_id, pid, subject, metadata):
-    with open(f"query_fields/{subject}.json") as f:
+def _run_single_pid_metadata_query(parent_id, pid, subject, field_source, metadata, force_array=False,
+                                   start_date=None, end_date=None):
+    with open(f"query_fields/{field_source}.json") as f:
         field_details = json.load(f)
 
     values_entry = f"<{pid}>"
 
-    query = _build_query(subject, field_details, values_entry)
+    query = _build_query(subject, field_details, values_entry, start_date, end_date)
 
     query_result = meta.sparql_select(query)
+
+    outputs = []
     for record in query_result.bindings:
         item_data = _read_record(record, field_details)
-        metadata[parent_id][subject] = item_data
+        outputs.append(item_data)
+
+    if force_array or len(outputs) > 1:
+        metadata[parent_id][field_source] = outputs
+    else:
+        metadata[parent_id][field_source] = outputs[0]
 
 
 def _run_all_pids_metadata_query(subject, metadata):
@@ -92,7 +124,7 @@ def _run_all_pids_metadata_query(subject, metadata):
     for pid in metadata.keys():
         values_entry += f"<{make_data_object_uri(pid)}> "
 
-    query = _build_query(subject, field_details, values_entry)
+    query = _build_query(subject, field_details, values_entry, None, None)
 
     query_result = meta.sparql_select(query)
     for record in query_result.bindings:
@@ -100,7 +132,7 @@ def _run_all_pids_metadata_query(subject, metadata):
         metadata[obj_id][subject] = _read_record(record, field_details)
 
 
-def _build_query(subject, field_details, values_entry):
+def _build_query(subject, field_details, values_entry, start_date, end_date):
     query = f"{_QUERY_PREFIX}\n"
     query += f"SELECT ?{subject}"
 
@@ -114,7 +146,14 @@ def _build_query(subject, field_details, values_entry):
     query += " WHERE {\n"
     query += f"VALUES ?{subject} {{ {values_entry} }}\n"
 
+    sorting = dict()
+    filter_start = None
+    filter_end = None
+
     for field in field_details['iris']:
+        if 'sort_order' in field:
+            sorting[field['sort_order']] = {'object': field['object'], 'direction': field['sort_direction']}
+
         if field['optional']:
             query += "OPTIONAL { "
 
@@ -129,9 +168,29 @@ def _build_query(subject, field_details, values_entry):
         if field['optional']:
             query += " }"
 
+        if 'filter' in field:
+            if field['filter'] == 'start':
+                filter_start = field['object']
+            elif field['filter'] == 'end':
+                filter_end = field['object']
+
         query += "\n"
 
-    query += "}"
+    if filter_start is not None and start_date is not None:
+        query += f"FILTER(!bound(?{filter_start}) || ?{filter_start} <= '{end_date}'^^xsd:date)\n"
+        query += f"FILTER(!bound(?{filter_end}) || ?{filter_end} >= '{start_date}'^^xsd:date)\n"
+
+    query += "}\n"
+
+    if 'functions' in field_details:
+        for func in field_details['functions']:
+            if 'sort_order' in func:
+                sorting[func['sort_order']] = {'object': func['object'], 'direction': func['sort_direction']}
+
+    if len(sorting) > 0:
+        query += "ORDER BY"
+        for item in sorted(sorting):
+            query += f' {sorting[item]["direction"]}(?{sorting[item]["object"]})'
 
     logging.debug(f"""Metadata query for {subject}:\n{query}""")
     return query
@@ -141,13 +200,15 @@ def _read_record(record, field_details):
     item_data = dict()
 
     for field in field_details['iris']:
-        if field["object"] in record.keys():
-            item_data[field["object"]] = getattr(record[field["object"]], field["type"])
+        if 'include_in_output' not in field or field['include_in_output'] is True:
+            if field["object"] in record.keys():
+                item_data[field["object"]] = getattr(record[field["object"]], field["type"])
 
     if 'functions' in field_details:
         for func in field_details['functions']:
-            if func["object"] in record.keys():
-                item_data[func["object"]] = getattr(record[func["object"]], func["type"])
+            if 'include_in_output' not in func or func['include_in_output'] is True:
+                if func["object"] in record.keys():
+                    item_data[func["object"]] = getattr(record[func["object"]], func["type"])
 
     return item_data
 
