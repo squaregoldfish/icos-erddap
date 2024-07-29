@@ -34,7 +34,7 @@ def main(config):
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted
             local_pids = database.get_active_pids(db)
-            newly_deleted_pids = list(set(local_pids) - set(datasets))
+            newly_deleted_pids = list(set(local_pids) - set(d[0] for d in datasets))
             for pid in newly_deleted_pids:
                 database.mark_deleted(db, pid)
 

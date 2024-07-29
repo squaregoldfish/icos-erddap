@@ -13,7 +13,8 @@
       "predicate": "otcmeta:hasHolder",
       "object": "personId",
       "type": "uri",
-      "optional": false
+      "optional": false,
+      "include_in_output": false
     },
     {
       "subject": "personId",
@@ -93,6 +94,7 @@
       "function": "COALESCE(?aw_base, 0)",
       "object": "attributionWeight",
       "type": "value",
+      "include_in_output": false,
       "sort_order": 1,
       "sort_direction": "desc"
     }

@@ -106,6 +106,8 @@ def _make_soop_entry(pid, metadata, config):
     entry += _make_common_attributes(pid, metadata, 'Trajectory')
     entry += _make_attribute_xml(Attribute('cdm_trajectory_variables', 'expocode'))
 
+    entry += _make_metadata_chunk_xml(metadata, 'people', 'person')
+
     # Make attributes from metadata in SQLite. Need a config file to
     # (a?) Map metadata entries to attribute names.
     # (b) Determine which attributes we copy, and which we don't.
@@ -122,6 +124,26 @@ def _make_soop_entry(pid, metadata, config):
 
     return entry
 
+
+def _make_metadata_chunk_xml(metadata, key, key_name):
+
+    xml = ""
+
+    if key in metadata:
+        entries = metadata[key]
+        if type(entries) != list:
+            entries = list()
+            entries.append(metadata[key])
+
+        entry_index = 1
+        for entry in entries:
+
+            for entry_key in entry.keys():
+                xml += _make_attribute_xml(Attribute(f'{key_name}_{entry_index}_{entry_key}', entry[entry_key]))
+
+            entry_index = entry_index + 1
+
+    return xml
 
 def _make_fos_entry(pid, metadata, config):
     # Common base details
