@@ -147,8 +147,6 @@ def _build_query(subject, field_details, values_entry, start_date, end_date):
     query += f"VALUES ?{subject} {{ {values_entry} }}\n"
 
     sorting = dict()
-    filter_start = None
-    filter_end = None
 
     for field in field_details['iris']:
         if 'sort_order' in field:
@@ -168,17 +166,14 @@ def _build_query(subject, field_details, values_entry, start_date, end_date):
         if field['optional']:
             query += " }"
 
+        query += "\n"
+
         if 'filter' in field:
             if field['filter'] == 'start':
                 filter_start = field['object']
+                query += f"FILTER(!bound(?{field['object']}) || ?{field['object']} <= '{end_date}'^^xsd:date)\n"
             elif field['filter'] == 'end':
-                filter_end = field['object']
-
-        query += "\n"
-
-    if filter_start is not None and start_date is not None:
-        query += f"FILTER(!bound(?{filter_start}) || ?{filter_start} <= '{end_date}'^^xsd:date)\n"
-        query += f"FILTER(!bound(?{filter_end}) || ?{filter_end} >= '{start_date}'^^xsd:date)\n"
+                query += f"FILTER(!bound(?{field['object']}) || ?{field['object']} >= '{start_date}'^^xsd:date)\n"
 
     query += "}\n"
 

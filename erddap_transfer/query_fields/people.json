@@ -1,7 +1,7 @@
 {
   "iris": [
     {
-      "subject": "roleId",
+      "subject": "stationRole",
       "predicate": "otcmeta:atOrganization",
       "object": "station",
       "type": "uri",
@@ -9,12 +9,30 @@
       "include_in_output": false
     },
     {
-      "subject": "roleId",
+      "subject": "stationRole",
       "predicate": "otcmeta:hasHolder",
       "object": "personId",
       "type": "uri",
       "optional": false,
       "include_in_output": false
+    },
+    {
+      "subject": "stationRole",
+      "predicate": "otcmeta:hasStartTime",
+      "object": "roleStart",
+      "type": "value",
+      "optional": true,
+      "include_in_output": false,
+      "filter": "start"
+    },
+    {
+      "subject": "stationRole",
+      "predicate": "otcmeta:hasEndTime",
+      "object": "roleEnd",
+      "type": "value",
+      "optional": true,
+      "include_in_output": false,
+      "filter": "end"
     },
     {
       "subject": "personId",
@@ -63,25 +81,7 @@
       "optional": true
     },
     {
-      "subject": "roleId",
-      "predicate": "otcmeta:hasStartTime",
-      "object": "roleStart",
-      "type": "value",
-      "optional": true,
-      "include_in_output": false,
-      "filter": "start"
-    },
-    {
-      "subject": "roleId",
-      "predicate": "otcmeta:hasEndTime",
-      "object": "roleEnd",
-      "type": "value",
-      "optional": true,
-      "include_in_output": false,
-      "filter": "end"
-    },
-    {
-      "subject": "roleId",
+      "subject": "stationRole",
       "predicate": "otcmeta:hasAttributionWeight",
       "object": "aw_base",
       "type": "value",
