@@ -1,0 +1,114 @@
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix otcmeta: <http://meta.icos-cp.eu/ontologies/otcmeta/>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+prefix skos: <http://www.w3.org/2004/02/skos/core#>
+
+SELECT ?station ?stationName ?stationLabel ?responsibleOrgId ?responsibleOrgName ?personId ?title ?firstName ?middleName ?lastName ?email ?orcid ?attributionWeight ?personRole ?personRoleOrg ?personRoleOrgName ?platformId ?platformName ?platformCode ?deploymentSchedule ?discreteSamplingSchedule ?instrumentSetup ?retrievalMethod ?airIntakePosition ?exhaustPosition ?portOfCall ?platformOwner ?instrumentId ?instrumentDeviceId ?instrumentManufacturer ?instrumentModel ?instrumentSerialNumber ?instrumentDocumentationReference ?instrumentDocumentationComment ?instrumentSamplingFrequency ?instrumentReportingFrequency ?sensorId ?sensorManufacturer ?sensorModel ?sensorSerialNumber ?sensorSamplingFrequency ?sensorReportingFrequency ?variableId ?variableName ?skosMatch WHERE {
+	# Station of interest
+	VALUES ?station { <%%STATION%%> }
+
+	# Station details
+	?station otcmeta:hasName ?stationName .
+	?station rdfs:label ?stationLabel .
+ 	OPTIONAL { ?station otcmeta:hasResponsibleOrg ?responsibleOrgId . }
+ 	OPTIONAL { ?responsibleOrgId otcmeta:hasName ?responsibleOrgName . }
+
+	# People attached to station
+	?stationPerson otcmeta:atOrganization ?station .
+ 	?stationPerson otcmeta:hasHolder ?personId .
+ 	OPTIONAL { ?stationPerson otcmeta:hasStartTime ?personStationStart . }
+ 	FILTER(!BOUND(?personStationStart) || ?personStationStart <= '%%END_DATE%%'^^xsd:date)
+	OPTIONAL { ?stationPerson otcmeta:hasEndTime ?personStationEnd . }
+	FILTER(!BOUND(?personStationEnd) || ?personStationEnd >= '%%START_DATE%%'^^xsd:date)
+
+	# Person Details
+	OPTIONAL { ?personId otcmeta:hasTitle ?title . }
+ 	?personId otcmeta:hasFirstName ?firstName .
+ 	OPTIONAL { ?personId otcmeta:hasMiddleName ?middleName . }
+ 	?personId otcmeta:hasLastName ?lastName .
+ 	OPTIONAL { ?personId otcmeta:hasEmail ?email . }
+ 	OPTIONAL { ?personId otcmeta:hasOrcidId ?orcid . }
+ 	OPTIONAL { ?stationPerson otcmeta:hasAttributionWeight ?aw_base . }
+ 	BIND (COALESCE(?aw_base, 0) AS ?attributionWeight) .
+
+	# Person's employment
+	?personRole otcmeta:hasHolder ?personId .
+	?personRole otcmeta:atOrganization ?personRoleOrg .
+	?personRoleOrg otcmeta:hasName ?personRoleOrgName .
+	VALUES ?personRoles {
+		otcmeta:AcademicInstitution
+		otcmeta:CommercialCompany
+	}
+	?personRoleOrg a ?personRoles
+	OPTIONAL { ?personRole otcmeta:hasStartTime ?employmentStart . }
+	FILTER(!BOUND(?employmentStart) || ?employmentStart <= '%%END_DATE%%'^^xsd:date)
+ 	OPTIONAL { ?personRole otcmeta:hasEndTime ?employmentEnd . }
+ 	FILTER(!BOUND(?employmentEnd) || ?employmentEnd >= '%%START_DATE%%'^^xsd:date)
+
+	# Platform deployment
+	?platformDeployment otcmeta:toStation ?station
+	OPTIONAL { ?platformDeployment otcmeta:hasStartTime ?platformDeploymentStart . }
+	FILTER(!BOUND(?platformDeploymentStart) || ?platformDeploymentStart <= '%%END_DATE%%'^^xsd:date)
+	OPTIONAL { ?platformDeployment otcmeta:hasEndTime ?platformDeploymentEnd . }
+	FILTER(!BOUND(?platformDeploymentEnd) || ?platformDeploymentEnd >= '%%START_DATE%%'^^xsd:date)
+	?platformDeployment otcmeta:ofPlatform ?platformId .
+
+	# Platform details
+	?platformId otcmeta:hasName ?platformName .
+	?platformId otcmeta:hasIcesPlatformCode ?platformCode .
+	OPTIONAL { ?platformId otcmeta:hasDeploymentSchedule ?deploymentSchedule . }
+	OPTIONAL { ?platformId otcmeta:hasDiscreteSamplingSchedule ?discreteSamplingSchedule . }
+	OPTIONAL { ?platformId otcmeta:hasInstrumentSetup ?instrumentSetup . }
+	OPTIONAL { ?platformId otcmeta:hasRetrievalMethod ?retrievalMethod . }
+	OPTIONAL { ?platformId otcmeta:airIntakePosition ?airIntakePosition . }
+	OPTIONAL { ?platformId otcmeta:exhaustPosition ?exhaustPosition . }
+	OPTIONAL { ?platformId otcmeta:hasPortOfCall ?portOfCall . }
+	OPTIONAL { ?platformId otcmeta:hasOwner ?platformOwnerId . }
+	OPTIONAL { ?platformOwnerId otcmeta:hasName ?platformOwner . }
+
+	# Instrument deployment
+	?instrumentDeployment otcmeta:toPlatform ?platformId .
+	OPTIONAL { ?instrumentDeployment otcmeta:hasStartTime ?instrumentDeploymentStart . }
+	FILTER(!BOUND(?instrumentDeploymentStart) || ?instrumentDeploymentStart <= '%%END_DATE%%'^^xsd:date)
+	OPTIONAL { ?instrumentDeployment otcmeta:hasEndTime ?instrumentDeploymentEnd . }
+	FILTER(!BOUND(?instrumentDeploymentEnd) || ?instrumentDeploymentEnd >= '%%START_DATE%%'^^xsd:date)
+	?instrumentDeployment otcmeta:ofInstrument ?instrumentId .
+
+	# Instrument details
+	?instrumentId otcmeta:device ?instrumentDeviceId .
+	?instrumentDeviceId otcmeta:hasManufacturer ?instrumentManufacturerId .
+	?instrumentManufacturerId otcmeta:hasName ?instrumentManufacturer .
+	?instrumentDeviceId otcmeta:hasModelName ?instrumentModel .
+	OPTIONAL { ?instrumentId otcmeta:hasSerialNumber ?instrumentSerialNumber . }
+	OPTIONAL { ?instrumentDeviceId otcmeta:hasDocumnentationReference ?instrumentDocumentationReference . }
+	OPTIONAL { ?instrumentDeviceId otcmeta:hasDocumnentationComment ?instrumentDocumentationComment . }
+	OPTIONAL { ?instrumentDeviceId otcmeta:hasSamplingFrequency ?instrumentSamplingFrequency . }
+	OPTIONAL { ?instrumentDeviceId otcmeta:hasReportingFrequency ?instrumentReportingFrequency . }
+
+	# Instrument Sensor Deployments
+	?sensorDeployment otcmeta:toInstrument ?instrumentId .
+	OPTIONAL { ?sensorDeployment otcmeta:hasStartTime ?sensorDeploymentStart . }
+	FILTER(!BOUND(?sensorDeploymentStart) || ?sensorDeploymentStart <= '%%END_DATE%%'^^xsd:date)
+	OPTIONAL { ?sensorDeployment otcmeta:hasEndTime ?sensorDeploymentEnd . }
+	FILTER(!BOUND(?sensorDeploymentEnd) || ?sensorDeploymentEnd >= '%%START_DATE%%'^^xsd:date)
+	?sensorDeployment otcmeta:ofSensor ?sensorId .
+
+	# Sensor details
+	?sensorId otcmeta:device ?sensorDeviceId .
+	?sensorDeviceId otcmeta:hasManufacturer ?sensorManufacturerId .
+	?sensorManufacturerId otcmeta:hasName ?sensorManufacturer .
+	?sensorDeviceId otcmeta:hasModelName ?sensorModel .
+	OPTIONAL { ?sensorId otcmeta:hasSerialNumber ?sensorSerialNumber . }
+	OPTIONAL { ?sensorDeviceId otcmeta:hasSamplingFrequency ?sensorSamplingFrequency . }
+	OPTIONAL { ?sensorDeviceId otcmeta:hasReportingFrequency ?sensorReportingFrequency . }
+
+	OPTIONAL {
+		?sensorDeployment otcmeta:measuresVariable ?variableId .
+		?variableId otcmeta:hasName ?variableName .
+		OPTIONAL { ?variableId skos:exactMatch ?skosMatch . }
+	}
+}
+ORDER BY DESC(?attributionWeight)

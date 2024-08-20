@@ -30,7 +30,6 @@ def main(config):
                 elif database.is_deleted(db, pid):
                     database.undelete(db, pid)
 
-
             # Get database IDs excluding deleted
             # If any not in cp_ids, mark as deleted
             local_pids = database.get_active_pids(db)
@@ -51,6 +50,7 @@ def main(config):
     except Exception as e:
         logging.error(f"Unhandled exception: {e}")
         logging.error(traceback.format_exc())
+        exit(1)
 
 
 if __name__ == "__main__":

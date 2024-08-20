@@ -2,10 +2,10 @@
 Functions for communicating with the ICOS Carbon Portal
 """
 import logging
-import json
 from dateutil.parser import isoparse
 from datetime import timedelta
 from icoscp_core.icos import meta
+import pandas as pd
 
 # The ICOS Data Object Specs we're interested in
 _DATA_TYPES = """
@@ -75,137 +75,167 @@ def _round_up(time):
 def get_metadata(datasets):
     """
     Retrieve the complete metadata for a PID as a python dict.
-    The dict will be built in sections corresponding to the
-    concepts and structures of the ICOS metadata.
     """
     metadata = dict()
+    pid_values_list = ''
     for (pid, start_date, end_date) in datasets:
-        metadata[pid] = {}
+        metadata[pid] = dict()
+        pid_values_list += f'<{make_data_object_uri(pid)}> '
 
-    # Get the central data object data
-    _run_all_pids_metadata_query('data_object', metadata)
+    # Get the central data object data for all PIDs
+    # This comes from the main CP metadata
+    with open('queries/data_object.sparql') as qin:
+        data_object_query = qin.read()
+
+    data_object_query = data_object_query.replace('%%VALUES%%', pid_values_list)
+    logging.debug(f'Getting data_object metadata:\n{data_object_query}')
+
+    query_result = meta.sparql_select(data_object_query)
+    for record in query_result.bindings:
+        pid = pid_from_uri(getattr(record['data_object'], 'uri'))
+        metadata[pid]['data_object'] = dict()
+
+        for field in record.keys():
+            if field != 'data_object':
+                if hasattr(record[field], 'uri'):
+                    metadata[pid]['data_object'][field] = getattr(record[field], 'uri')
+                else:
+                    metadata[pid]['data_object'][field] = getattr(record[field], 'value')
 
     for (pid, start_date, end_date) in datasets:
-        station_pid = _get_otc_station_id(metadata[pid]['data_object']['stationId'])
-        _run_single_pid_metadata_query(pid, station_pid, 'station', 'station', metadata)
-        _run_single_pid_metadata_query(pid, station_pid, 'station', 'people', metadata, force_array=True,
-                                       start_date=start_date, end_date=end_date)
+        with open('queries/otc_metadata.sparql') as qin:
+            otc_metadata_query = qin.read()
+
+        otc_metadata_query = (otc_metadata_query.
+                              replace('%%STATION%%', _get_otc_station_id(metadata[pid]['data_object']['stationId'])).
+                              replace('%%START_DATE%%', start_date.strftime('%Y-%m-%d')).
+                              replace('%%END_DATE%%', end_date.strftime('%Y-%m-%d')))
+
+        logging.debug(f'Getting OTC metadata for {pid}:\n{otc_metadata_query}')
+        query_result = meta.sparql_select(otc_metadata_query)
+
+        records = list()
+
+        for record in query_result.bindings:
+            fields = list()
+            for field in query_result.variable_names:
+                if field in record:
+                    if hasattr(record[field], 'uri'):
+                        fields.append(getattr(record[field], 'uri'))
+                    else:
+                        fields.append(getattr(record[field], 'value'))
+                else:
+                    fields.append('')
+
+            records.append(fields)
+
+        if len(records) == 0:
+            logging.warning(f'No metadata returned for PID {pid}')
+        else:
+
+            dataframe = pd.DataFrame(records, columns=query_result.variable_names)
+
+            station_metadata = dict()
+            station_metadata['name'] = dataframe['stationName'][0]
+            station_metadata['otcName'] = dataframe['stationLabel'][0]
+            station_metadata['responsibleOrgId'] = dataframe['responsibleOrgId'][0]
+            station_metadata['responsibleOrgName'] = dataframe['responsibleOrgName'][0]
+            metadata[pid]['station'] = station_metadata
+
+            people = list()
+            for person_id in pd.unique(dataframe['personId']):
+                person_data = dataframe[dataframe['personId'] == person_id]
+
+                person = dict()
+                person['id'] = person_id
+                person['title'] = person_data['title'].iloc[0]
+                person['firstName'] = person_data['firstName'].iloc[0]
+                person['middleName'] = person_data['middleName'].iloc[0]
+                person['lastName'] = person_data['lastName'].iloc[0]
+                person['email'] = person_data['email'].iloc[0]
+                person['orcid'] = person_data['orcid'].iloc[0]
+
+                person_orgs_list = list()
+                for person_org_id in pd.unique(person_data['personRoleOrg']):
+                    person_orgs = person_data[person_data['personRoleOrg'] == person_org_id]
+
+                    person_org = dict()
+                    person_org['id'] = person_org_id
+                    person_org['name'] = person_orgs['personRoleOrgName'].iloc[0]
+                    person_orgs_list.append(person_org)
+
+                person['orgs'] = person_orgs_list
+
+                people.append(person)
+
+            metadata[pid]['people'] = people
+
+            platform = dict()
+            platform['id'] = dataframe['platformId'][0]
+            platform['name'] = dataframe['platformName'][0]
+            platform['code'] = dataframe['platformCode'][0]
+            platform['deploymentSchedule'] = dataframe['deploymentSchedule'][0]
+            platform['discreteSamplingSchedule'] = dataframe['discreteSamplingSchedule'][0]
+            platform['instrumentSetup'] = dataframe['instrumentSetup'][0]
+            platform['retrievalMethod'] = dataframe['retrievalMethod'][0]
+            platform['airIntakePosition'] = dataframe['airIntakePosition'][0]
+            platform['exhaustPosition'] = dataframe['exhaustPosition'][0]
+            platform['portOfCall'] = dataframe['portOfCall'][0]
+            platform['owner'] = dataframe['platformOwner'][0]
+
+            metadata[pid]['platform'] = platform
+
+            instruments = list()
+            for instrument_id in pd.unique(dataframe['instrumentId']):
+                instrument = dict()
+
+                instrument_data = dataframe[dataframe['instrumentId'] == instrument_id]
+
+                instrument['id'] = instrument_id
+                instrument['deviceId'] = instrument_data['instrumentDeviceId'].iloc[0]
+                instrument['manufacturer'] = instrument_data['instrumentManufacturer'].iloc[0]
+                instrument['model'] = instrument_data['instrumentModel'].iloc[0]
+                instrument['serialNumber'] = instrument_data['instrumentSerialNumber'].iloc[0]
+                instrument['documentationReference'] = instrument_data['instrumentDocumentationReference'].iloc[0]
+                instrument['documentationComment'] = instrument_data['instrumentDocumentationComment'].iloc[0]
+                instrument['samplingFrequency'] = instrument_data['instrumentSamplingFrequency'].iloc[0]
+                instrument['reportingFrequency'] = instrument_data['instrumentReportingFrequency'].iloc[0]
+                instruments.append(instrument)
+
+            metadata[pid]['instruments'] = instruments
+
+            sensors = list()
+            for sensor_id in pd.unique(dataframe['sensorId']):
+                sensor = dict()
+
+                sensor_data = dataframe[dataframe['sensorId'] == sensor_id]
+
+                sensor['id'] = sensor_id
+                sensor['manufacturer'] = sensor_data['sensorManufacturer'].iloc[0]
+                sensor['model'] = sensor_data['sensorModel'].iloc[0]
+                sensor['serialNumber'] = sensor_data['sensorSerialNumber'].iloc[0]
+                sensor['samplingFrequency'] = sensor_data['sensorSamplingFrequency'].iloc[0]
+                sensor['reportingFrequency'] = sensor_data['sensorReportingFrequency'].iloc[0]
+
+                variables = list()
+                for variable_id in pd.unique(sensor_data['variableId']):
+                    variable = dict()
+
+                    variable_data = sensor_data[sensor_data['variableId'] == variable_id]
+
+                    variable['id'] = variable_id
+                    variable['name'] = variable_data['variableName'].iloc[0]
+                    variable['skosMatch'] = variable_data['skosMatch'].iloc[0]
+
+                    variables.append(variable)
+
+                sensor['variables'] = variables
+
+                sensors.append(sensor)
+
+            metadata[pid]['sensors'] = sensors
 
     return metadata
-
-
-def _run_single_pid_metadata_query(parent_id, pid, subject, field_source, metadata, force_array=False,
-                                   start_date=None, end_date=None):
-    with open(f"query_fields/{field_source}.json") as f:
-        field_details = json.load(f)
-
-    values_entry = f"<{pid}>"
-
-    query = _build_query(subject, field_details, values_entry, start_date, end_date)
-
-    query_result = meta.sparql_select(query)
-
-    outputs = []
-    for record in query_result.bindings:
-        item_data = _read_record(record, field_details)
-        outputs.append(item_data)
-
-    if force_array or len(outputs) > 1:
-        metadata[parent_id][field_source] = outputs
-    else:
-        metadata[parent_id][field_source] = outputs[0]
-
-
-def _run_all_pids_metadata_query(subject, metadata):
-    with open(f"query_fields/{subject}.json") as f:
-        field_details = json.load(f)
-
-    values_entry = ""
-    for pid in metadata.keys():
-        values_entry += f"<{make_data_object_uri(pid)}> "
-
-    query = _build_query(subject, field_details, values_entry, None, None)
-
-    query_result = meta.sparql_select(query)
-    for record in query_result.bindings:
-        obj_id = pid_from_uri(getattr(record[subject], "uri"))
-        metadata[obj_id][subject] = _read_record(record, field_details)
-
-
-def _build_query(subject, field_details, values_entry, start_date, end_date):
-    query = f"{_QUERY_PREFIX}\n"
-    query += f"SELECT ?{subject}"
-
-    for field in field_details['iris']:
-        query += f" ?{field['object']}"
-
-    if 'functions' in field_details:
-        for func in field_details['functions']:
-            query += f" ({func['function']} AS ?{func['object']})"
-
-    query += " WHERE {\n"
-    query += f"VALUES ?{subject} {{ {values_entry} }}\n"
-
-    sorting = dict()
-
-    for field in field_details['iris']:
-        if 'sort_order' in field:
-            sorting[field['sort_order']] = {'object': field['object'], 'direction': field['sort_direction']}
-
-        if field['optional']:
-            query += "OPTIONAL { "
-
-        query += "?"
-        if 'subject' in field:
-            query += field['subject']
-        else:
-            query += subject
-
-        query += f" {field['predicate']} ?{field['object']} ."
-
-        if field['optional']:
-            query += " }"
-
-        query += "\n"
-
-        if 'filter' in field:
-            if field['filter'] == 'start':
-                filter_start = field['object']
-                query += f"FILTER(!bound(?{field['object']}) || ?{field['object']} <= '{end_date}'^^xsd:date)\n"
-            elif field['filter'] == 'end':
-                query += f"FILTER(!bound(?{field['object']}) || ?{field['object']} >= '{start_date}'^^xsd:date)\n"
-
-    query += "}\n"
-
-    if 'functions' in field_details:
-        for func in field_details['functions']:
-            if 'sort_order' in func:
-                sorting[func['sort_order']] = {'object': func['object'], 'direction': func['sort_direction']}
-
-    if len(sorting) > 0:
-        query += "ORDER BY"
-        for item in sorted(sorting):
-            query += f' {sorting[item]["direction"]}(?{sorting[item]["object"]})'
-
-    logging.debug(f"""Metadata query for {subject}:\n{query}""")
-    return query
-
-
-def _read_record(record, field_details):
-    item_data = dict()
-
-    for field in field_details['iris']:
-        if 'include_in_output' not in field or field['include_in_output'] is True:
-            if field["object"] in record.keys():
-                item_data[field["object"]] = getattr(record[field["object"]], field["type"])
-
-    if 'functions' in field_details:
-        for func in field_details['functions']:
-            if 'include_in_output' not in func or func['include_in_output'] is True:
-                if func["object"] in record.keys():
-                    item_data[func["object"]] = getattr(record[func["object"]], func["type"])
-
-    return item_data
 
 
 def _get_otc_station_id(cp_station_id):

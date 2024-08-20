@@ -1,0 +1,16 @@
+prefix cpmeta: <http://meta.icos-cp.eu/ontologies/cpmeta/>
+prefix otcmeta: <http://meta.icos-cp.eu/ontologies/otcmeta/>
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix prov: <http://www.w3.org/ns/prov#>
+prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+SELECT ?data_object ?spec ?rows ?fileName ?citation ?keywords ?startTime ?endTime ?stationId (STRBEFORE(?fileName, ".csv") AS ?expocode) WHERE {
+	VALUES ?data_object { %%VALUES%% }
+	?data_object cpmeta:hasObjectSpec ?spec .
+	OPTIONAL { ?data_object cpmeta:hasNumberOfRows ?rows . }
+	?data_object cpmeta:hasName ?fileName .
+	OPTIONAL { ?data_object cpmeta:hasCitationString ?citation . }
+	OPTIONAL { ?data_object cpmeta:hasKeywords ?keywords . }
+	OPTIONAL { ?data_object cpmeta:hasStartTime | (cpmeta:wasAcquiredBy / prov:startedAtTime) ?startTime . }
+	OPTIONAL { ?data_object cpmeta:hasEndTime | (cpmeta:wasAcquiredBy / prov:endedAtTime) ?endTime . }
+	?data_object cpmeta:wasAcquiredBy/prov:wasAssociatedWith ?stationId .
+}
