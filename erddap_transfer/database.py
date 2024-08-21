@@ -201,7 +201,7 @@ def write_datasets_xml(conn, pid, xml):
     """
     Set the datasets erddap entry for a PID, and clear the "Updated" flag
     """
-    logging.info(f"Writing datasets.xml entry for {pid}")
+    logging.debug(f"Writing datasets.xml entry for {pid}")
     c = conn.cursor()
     try:
         c.execute("UPDATE data_object SET datasets_xml = ?, updated = 0 WHERE id = ?", [xml, pid])

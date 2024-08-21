@@ -50,7 +50,7 @@ def main(config):
 
                 # Download the new dataset if required
                 if dataset["new"]:
-                    logging.info(f"Downloading dataset {dataset["pid"]}")
+                    logging.debug(f"Downloading dataset {dataset["pid"]}")
                     dataset_dir = os.path.join(config["datasets_dir"], dataset["pid"])
                     os.makedirs(dataset_dir, exist_ok=True)
 
@@ -74,6 +74,7 @@ def main(config):
     except Exception as e:
         logging.critical(f"Unhandled exception: {e}")
         logging.critical(traceback.format_exc())
+        exit(1)
 
 
 def _make_datasets_xml_entry(db, pid):
@@ -106,7 +107,7 @@ def _make_soop_entry(pid, metadata, config):
     entry += _make_common_attributes(pid, metadata, 'Trajectory')
     entry += _make_attribute_xml(Attribute('cdm_trajectory_variables', 'expocode'))
 
-    entry += _make_metadata_chunk_xml(metadata, 'people', 'person')
+    entry += _make_people_xml(metadata)
 
     # Make attributes from metadata in SQLite. Need a config file to
     # (a?) Map metadata entries to attribute names.
@@ -125,21 +126,20 @@ def _make_soop_entry(pid, metadata, config):
     return entry
 
 
-def _make_metadata_chunk_xml(metadata, key, key_name):
+def _make_people_xml(metadata):
 
     xml = ""
 
-    if key in metadata:
-        entries = metadata[key]
-        if type(entries) != list:
-            entries = list()
-            entries.append(metadata[key])
+    if 'people' in metadata:
+        entries = metadata['people']
 
         entry_index = 1
-        for entry in entries:
+        for person in entries:
+            for key in ['id', 'title', 'firstName', 'middleName', 'lastName', 'email', 'orcid']:
+                xml += _make_attribute_xml(Attribute(f'person_{entry_index}_{key}', person[key]))
 
-            for entry_key in entry.keys():
-                xml += _make_attribute_xml(Attribute(f'{key_name}_{entry_index}_{entry_key}', entry[entry_key]))
+            org_names = (org['name'] for org in person['orgs'])
+            xml += _make_attribute_xml(Attribute(f'person_{entry_index}_org', ';'.join(org_names)))
 
             entry_index = entry_index + 1
 
@@ -193,9 +193,9 @@ def _make_common_attributes(pid, metadata, cdm_data_type):
     common_attributes += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
     common_attributes += _make_attribute_xml(Attribute('standard_name_vocabulary', 'CF Standard Name Table v70'))
     common_attributes += _make_attribute_xml(Attribute('summary',
-                                                       f'ICOS OTC {_SPEC_TO_STRING[metadata["data_object"]["spec"]]} Release from {html.escape(metadata["station"]["stationName"])}'))
+                                                       f'ICOS OTC {_SPEC_TO_STRING[metadata["data_object"]["spec"]]} Release from {html.escape(metadata["station"]["name"])}'))
     common_attributes += _make_attribute_xml(
-        Attribute('title', f'{html.escape(metadata['station']['stationName'])} - {html.escape(metadata['data_object']['expocode'])}'))
+        Attribute('title', f'{html.escape(metadata['station']['name'])} - {html.escape(metadata['data_object']['expocode'])}'))
     common_attributes += _make_attribute_xml(
         Attribute('citation', f'{html.escape(metadata['data_object']['citation'])}'))
 
