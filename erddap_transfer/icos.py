@@ -219,15 +219,16 @@ def get_metadata(datasets):
 
                 variables = list()
                 for variable_id in pd.unique(sensor_data['variableId']):
-                    variable = dict()
+                    if variable_id != '':
+                        variable = dict()
 
-                    variable_data = sensor_data[sensor_data['variableId'] == variable_id]
+                        variable_data = sensor_data[sensor_data['variableId'] == variable_id]
 
-                    variable['id'] = variable_id
-                    variable['name'] = variable_data['variableName'].iloc[0]
-                    variable['skosMatch'] = variable_data['skosMatch'].iloc[0]
+                        variable['id'] = variable_id
+                        variable['name'] = variable_data['variableName'].iloc[0]
+                        variable['skosMatch'] = variable_data['skosMatch'].iloc[0]
 
-                    variables.append(variable)
+                        variables.append(variable)
 
                 sensor['variables'] = variables
 
