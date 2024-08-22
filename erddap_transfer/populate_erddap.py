@@ -187,7 +187,9 @@ def _make_common_attributes(pid, metadata, cdm_data_type):
     common_attributes += _make_attribute_xml(Attribute('infoUrl', icos.make_data_object_uri(pid)))
     common_attributes += _make_attribute_xml(Attribute('institution',
                                                        f'ICOS RI; {html.escape(metadata['station']['responsibleOrgName'])}'))
-    common_attributes += _make_attribute_xml(Attribute('keywords', 'TK (from ICOS?)'))
+    if 'keywords' in metadata['data_object'].keys():
+        common_attributes += _make_attribute_xml(Attribute('keywords', {html.escape(metadata['data_object']['keywords'])}))
+
     common_attributes += _make_attribute_xml(Attribute('license',
                                                        'CC BY 4.0/ICOS Data Licence: https://www.icos-cp.eu/data-services/about-data-portal/data-license'))
     common_attributes += _make_attribute_xml(Attribute('sourceUrl', icos.make_data_object_uri(pid)))
