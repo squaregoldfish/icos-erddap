@@ -66,8 +66,10 @@ SELECT ?station ?stationName ?stationLabel ?responsibleOrgId ?responsibleOrgName
 	OPTIONAL { ?platformId otcmeta:airIntakePosition ?airIntakePosition . }
 	OPTIONAL { ?platformId otcmeta:exhaustPosition ?exhaustPosition . }
 	OPTIONAL { ?platformId otcmeta:hasPortOfCall ?portOfCall . }
-	OPTIONAL { ?platformId otcmeta:hasOwner ?platformOwnerId . }
-	OPTIONAL { ?platformOwnerId otcmeta:hasName ?platformOwner . }
+	OPTIONAL {
+		?platformId otcmeta:hasOwner ?platformOwnerId .
+		?platformOwnerId otcmeta:hasName ?platformOwner .
+	}
 
 	# Instrument deployment
 	?instrumentDeployment otcmeta:toPlatform ?platformId .
