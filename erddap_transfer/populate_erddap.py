@@ -67,7 +67,7 @@ def main(config):
                         try:
                             _make_datasets_xml_entry(db, dataset["pid"])
                         except Exception:
-                            logging.error(f"Failed to build datasets.xml for dataset {dataset["pid"]}")
+                            logging.error(f"Failed to build datasets.xml for dataset {dataset['pid']}")
                             logging.error(traceback.format_exc())
 
             _write_datasets_xml(config, db)
