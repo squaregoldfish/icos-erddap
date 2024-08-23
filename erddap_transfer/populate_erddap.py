@@ -58,7 +58,7 @@ def main(config):
                         data.save_to_folder(icos.make_data_object_uri(dataset["pid"]), dataset_dir)
                         database.clear_new(db, dataset["pid"])
                     except Exception:
-                        logging.error(f"Unable to download dataset {dataset["pid"]}")
+                        logging.error(f"Unable to download dataset {dataset['pid']}")
                         logging.error(traceback.format_exc())
                         dataset_ok = False
 

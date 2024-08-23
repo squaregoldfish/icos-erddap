@@ -214,16 +214,19 @@ def get_datasets_xml(conn):
     c = conn.cursor()
     try:
         xml = ""
-        c.execute("SELECT datasets_xml, deleted FROM data_object ORDER BY id")
+        c.execute("SELECT id, datasets_xml, deleted FROM data_object ORDER BY id")
         records = c.fetchall()
         for record in records:
-            record_xml = record[0]
+            record_xml = record[1]
 
-            # If the PID is deleted, update the erddap accordingly
-            if record[1] == 1:
-                record_xml = record_xml.replace('active="true"', 'active="false"')
+            if record_xml is None:
+                logging.warn(f"No datasets XML for PID {record[0]}")
+            else:
+                # If the PID is deleted, update the erddap accordingly
+                if record[2] == 1:
+                    record_xml = record_xml.replace('active="true"', 'active="false"')
 
-            xml += record_xml
+                xml += record_xml
 
         return xml
     finally:
