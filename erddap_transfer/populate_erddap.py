@@ -50,7 +50,7 @@ def main(config):
 
                 # Download the new dataset if required
                 if dataset["new"]:
-                    logging.debug(f"Downloading dataset {dataset["pid"]}")
+                    logging.debug(f"Downloading dataset {dataset['pid']}")
                     dataset_dir = os.path.join(config["datasets_dir"], dataset["pid"])
                     os.makedirs(dataset_dir, exist_ok=True)
 
