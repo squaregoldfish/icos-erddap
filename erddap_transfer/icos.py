@@ -243,7 +243,7 @@ def _get_otc_station_id(cp_station_id):
         query += f"select * where {{ <{cp_station_id}> cpmeta:hasOtcId ?otcId }}"
 
         query_result = run_query(query)
-        _OTC_STATION_ID_CACHE[cp_station_id] = f"{_OTC_STATION_ID_PREFIX}{query_result.bindings[0]["otcId"].value}"
+        _OTC_STATION_ID_CACHE[cp_station_id] = f"{_OTC_STATION_ID_PREFIX}{query_result.bindings[0]['otcId'].value}"
         return _OTC_STATION_ID_CACHE[cp_station_id]
 
 
