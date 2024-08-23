@@ -15,7 +15,7 @@ _LOG_FILE_ = "update_from_icos.log"
 def main(config):
     try:
         logging.basicConfig(filename=_LOG_FILE_,
-                            format='%(asctime)s %(levelname)s - %(message)s', level=config["log_level"])
+                            format="%(asctime)s %(levelname)s - %(message)s", level=config["log_level"])
         logging.info("Updating info from ICOS Carbon Portal")
 
         # Connect to the internal database
