@@ -1,9 +1,10 @@
 """
 Functions for communicating with the ICOS Carbon Portal
 """
+import pause
 import logging
 from dateutil.parser import isoparse
-from datetime import timedelta
+from datetime import datetime, timedelta
 from icoscp_core.icos import meta
 import pandas as pd
 
@@ -25,6 +26,7 @@ _OTC_STATION_ID_PREFIX = "http://meta.icos-cp.eu/resources/otcmeta/"
 
 _OTC_STATION_ID_CACHE = dict()
 
+_NEXT_QUERY_TIME = None
 
 def get_all_data_object_ids():
     """
@@ -46,10 +48,7 @@ def get_all_data_object_ids():
     FILTER NOT EXISTS {{[] cpmeta:isNextVersionOf ?dobj}}
     }}
     """
-
-    logging.debug(f"Query:\n{query}")
-
-    query_result = meta.sparql_select(query)
+    query_result = run_query(query)
     result = []
 
     for record in query_result.bindings:
@@ -88,9 +87,7 @@ def get_metadata(datasets):
         data_object_query = qin.read()
 
     data_object_query = data_object_query.replace("%%VALUES%%", pid_values_list)
-    logging.debug(f"Getting data_object metadata:\n{data_object_query}")
-
-    query_result = meta.sparql_select(data_object_query)
+    query_result = run_query(data_object_query)
     for record in query_result.bindings:
         pid = pid_from_uri(getattr(record["data_object"], "uri"))
         metadata[pid]["data_object"] = dict()
@@ -111,8 +108,7 @@ def get_metadata(datasets):
                               replace("%%START_DATE%%", start_date.strftime("%Y-%m-%d")).
                               replace("%%END_DATE%%", end_date.strftime("%Y-%m-%d")))
 
-        logging.debug(f"Getting OTC metadata for {pid}:\n{otc_metadata_query}")
-        query_result = meta.sparql_select(otc_metadata_query)
+        query_result = run_query(otc_metadata_query)
 
         records = list()
 
@@ -246,7 +242,7 @@ def _get_otc_station_id(cp_station_id):
         query = f"{_QUERY_PREFIX}\n"
         query += f"select * where {{ <{cp_station_id}> cpmeta:hasOtcId ?otcId }}"
 
-        query_result = meta.sparql_select(query)
+        query_result = run_query(query)
         _OTC_STATION_ID_CACHE[cp_station_id] = f"{_OTC_STATION_ID_PREFIX}{query_result.bindings[0]["otcId"].value}"
         return _OTC_STATION_ID_CACHE[cp_station_id]
 
@@ -257,3 +253,22 @@ def make_data_object_uri(pid):
 
 def pid_from_uri(uri):
     return uri.split("/")[-1]
+
+
+def run_query(query):
+    global _NEXT_QUERY_TIME
+
+    if _NEXT_QUERY_TIME is not None:
+        if datetime.now() < _NEXT_QUERY_TIME:
+            logging.debug(f"Query Pausing Until {_NEXT_QUERY_TIME}")
+            pause.until(_NEXT_QUERY_TIME)
+
+    logging.debug(f"Running Query:\n{query}")
+    query_start = datetime.now()
+    query_result = meta.sparql_select(query)
+    query_end = datetime.now()
+
+    query_time = query_end - query_start
+    _NEXT_QUERY_TIME = datetime.now() + (query_time * 2)
+
+    return query_result
