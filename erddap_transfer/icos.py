@@ -108,6 +108,7 @@ def get_metadata(datasets):
                               replace("%%START_DATE%%", start_date.strftime("%Y-%m-%d")).
                               replace("%%END_DATE%%", end_date.strftime("%Y-%m-%d")))
 
+        logging.debug(f"Retrieving station metadata for {pid}")
         query_result = run_query(otc_metadata_query)
 
         records = list()
@@ -196,6 +197,14 @@ def get_metadata(datasets):
                 instrument["documentationComment"] = instrument_data["instrumentDocumentationComment"].iloc[0]
                 instrument["samplingFrequency"] = instrument_data["instrumentSamplingFrequency"].iloc[0]
                 instrument["reportingFrequency"] = instrument_data["instrumentReportingFrequency"].iloc[0]
+                instrument["deviceSkos"] = instrument_data["instrumentDeviceSkos"].iloc[0]
+
+                instrument_measures = pd.unique(instrument_data["instrumentMeasuresSkos"])
+                if len(instrument_measures) == 1 and instrument_measures[0] == "":
+                    instrument["measures"] = list()
+                else:
+                    instrument["measures"] = instrument_measures.tolist()
+
                 instruments.append(instrument)
 
             metadata[pid]["instruments"] = instruments
@@ -212,6 +221,7 @@ def get_metadata(datasets):
                 sensor["serialNumber"] = sensor_data["sensorSerialNumber"].iloc[0]
                 sensor["samplingFrequency"] = sensor_data["sensorSamplingFrequency"].iloc[0]
                 sensor["reportingFrequency"] = sensor_data["sensorReportingFrequency"].iloc[0]
+                sensor["deviceSkos"] = sensor_data["sensorDeviceSkos"].iloc[0]
 
                 variables = list()
                 for variable_id in pd.unique(sensor_data["variableId"]):
@@ -222,7 +232,7 @@ def get_metadata(datasets):
 
                         variable["id"] = variable_id
                         variable["name"] = variable_data["variableName"].iloc[0]
-                        variable["skosMatch"] = variable_data["skosMatch"].iloc[0]
+                        variable["skosMatch"] = variable_data["variableSkosMatch"].iloc[0]
 
                         variables.append(variable)
 

@@ -6,7 +6,7 @@ prefix prov: <http://www.w3.org/ns/prov#>
 prefix xsd: <http://www.w3.org/2001/XMLSchema#>
 prefix skos: <http://www.w3.org/2004/02/skos/core#>
 
-SELECT ?station ?stationName ?stationLabel ?responsibleOrgId ?responsibleOrgName ?personId ?title ?firstName ?middleName ?lastName ?email ?orcid ?attributionWeight ?personRole ?personRoleOrg ?personRoleOrgName ?platformId ?platformName ?platformCode ?deploymentSchedule ?discreteSamplingSchedule ?instrumentSetup ?retrievalMethod ?airIntakePosition ?exhaustPosition ?portOfCall ?platformOwner ?instrumentId ?instrumentDeviceId ?instrumentManufacturer ?instrumentModel ?instrumentSerialNumber ?instrumentDocumentationReference ?instrumentDocumentationComment ?instrumentSamplingFrequency ?instrumentReportingFrequency ?sensorId ?sensorManufacturer ?sensorModel ?sensorSerialNumber ?sensorSamplingFrequency ?sensorReportingFrequency ?variableId ?variableName ?skosMatch WHERE {
+SELECT ?station ?stationName ?stationLabel ?responsibleOrgId ?responsibleOrgName ?personId ?title ?firstName ?middleName ?lastName ?email ?orcid ?attributionWeight ?personRole ?personRoleOrg ?personRoleOrgName ?platformId ?platformName ?platformCode ?deploymentSchedule ?discreteSamplingSchedule ?instrumentSetup ?retrievalMethod ?airIntakePosition ?exhaustPosition ?portOfCall ?platformOwner ?instrumentId ?instrumentDeviceId ?instrumentManufacturer ?instrumentModel ?instrumentSerialNumber ?instrumentDocumentationReference ?instrumentDocumentationComment ?instrumentSamplingFrequency ?instrumentReportingFrequency ?instrumentDeviceSkos ?instrumentMeasuresSkos ?sensorId ?sensorManufacturer ?sensorModel ?sensorSerialNumber ?sensorSamplingFrequency ?sensorReportingFrequency ?sensorDeviceSkos ?variableId ?variableName ?variableSkosMatch WHERE {
 	# Station of interest
 	VALUES ?station { <%%STATION%%> }
 
@@ -89,28 +89,33 @@ SELECT ?station ?stationName ?stationLabel ?responsibleOrgId ?responsibleOrgName
 	OPTIONAL { ?instrumentDeviceId otcmeta:hasDocumnentationComment ?instrumentDocumentationComment . }
 	OPTIONAL { ?instrumentDeviceId otcmeta:hasSamplingFrequency ?instrumentSamplingFrequency . }
 	OPTIONAL { ?instrumentDeviceId otcmeta:hasReportingFrequency ?instrumentReportingFrequency . }
+	OPTIONAL { ?instrumentDeviceId skos:exactMatch ?instrumentDeviceSkos .}
+	OPTIONAL { ?instrumentDeviceId otcmeta:measuresSkos ?instrumentMeasuresSkos . }
 
 	# Instrument Sensor Deployments
-	?sensorDeployment otcmeta:toInstrument ?instrumentId .
-	OPTIONAL { ?sensorDeployment otcmeta:hasStartTime ?sensorDeploymentStart . }
-	FILTER(!BOUND(?sensorDeploymentStart) || ?sensorDeploymentStart <= '%%END_DATE%%'^^xsd:date)
-	OPTIONAL { ?sensorDeployment otcmeta:hasEndTime ?sensorDeploymentEnd . }
-	FILTER(!BOUND(?sensorDeploymentEnd) || ?sensorDeploymentEnd >= '%%START_DATE%%'^^xsd:date)
-	?sensorDeployment otcmeta:ofSensor ?sensorId .
-
-	# Sensor details
-	?sensorId otcmeta:device ?sensorDeviceId .
-	?sensorDeviceId otcmeta:hasManufacturer ?sensorManufacturerId .
-	?sensorManufacturerId otcmeta:hasName ?sensorManufacturer .
-	?sensorDeviceId otcmeta:hasModelName ?sensorModel .
-	OPTIONAL { ?sensorId otcmeta:hasSerialNumber ?sensorSerialNumber . }
-	OPTIONAL { ?sensorDeviceId otcmeta:hasSamplingFrequency ?sensorSamplingFrequency . }
-	OPTIONAL { ?sensorDeviceId otcmeta:hasReportingFrequency ?sensorReportingFrequency . }
-
 	OPTIONAL {
-		?sensorDeployment otcmeta:measuresVariable ?variableId .
-		?variableId otcmeta:hasName ?variableName .
-		OPTIONAL { ?variableId skos:exactMatch ?skosMatch . }
+		?sensorDeployment otcmeta:toInstrument ?instrumentId .
+		OPTIONAL { ?sensorDeployment otcmeta:hasStartTime ?sensorDeploymentStart . }
+		FILTER(!BOUND(?sensorDeploymentStart) || ?sensorDeploymentStart <= '%%END_DATE%%'^^xsd:date)
+		OPTIONAL { ?sensorDeployment otcmeta:hasEndTime ?sensorDeploymentEnd . }
+		FILTER(!BOUND(?sensorDeploymentEnd) || ?sensorDeploymentEnd >= '%%START_DATE%%'^^xsd:date)
+		?sensorDeployment otcmeta:ofSensor ?sensorId .
+
+		# Sensor details
+		?sensorId otcmeta:device ?sensorDeviceId .
+		?sensorDeviceId otcmeta:hasManufacturer ?sensorManufacturerId .
+		?sensorManufacturerId otcmeta:hasName ?sensorManufacturer .
+		?sensorDeviceId otcmeta:hasModelName ?sensorModel .
+		OPTIONAL { ?sensorId otcmeta:hasSerialNumber ?sensorSerialNumber . }
+		OPTIONAL { ?sensorDeviceId otcmeta:hasSamplingFrequency ?sensorSamplingFrequency . }
+		OPTIONAL { ?sensorDeviceId otcmeta:hasReportingFrequency ?sensorReportingFrequency . }
+		OPTIONAL { ?sensorDeviceId skos:exactMatch ?sensorDeviceSkos .}
+
+		OPTIONAL {
+			?sensorDeployment otcmeta:measuresVariable ?variableId .
+			?variableId otcmeta:hasName ?variableName .
+			OPTIONAL { ?variableId skos:exactMatch ?variableSkosMatch . }
+		}
 	}
 }
 ORDER BY DESC(?attributionWeight)
