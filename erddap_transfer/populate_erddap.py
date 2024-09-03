@@ -153,6 +153,7 @@ def _make_fos_entry(pid, metadata, config):
     entry += "<addAttributes>\n"
     entry += _make_common_attributes(pid, metadata, "TimeSeries")
     entry += _make_attribute_xml(Attribute("cdm_timeseries_variables", "expocode"))
+    entry += _make_people_xml(metadata)
     entry += "</addAttributes>\n"
 
     # Data Variables
