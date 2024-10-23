@@ -11,6 +11,8 @@ import icos
 import html
 from icoscp_core.icos import data
 from Attribute import Attribute
+import pandas as pd
+import xarray as xr
 
 _LOG_FILE_ = "populate_erddap.log"
 
@@ -56,6 +58,7 @@ def main(config):
 
                     try:
                         data.save_to_folder(icos.make_data_object_uri(dataset["pid"]), dataset_dir)
+                        _generate_netcdf(dataset["pid"], dataset_dir, db)
                         database.clear_new(db, dataset["pid"])
                     except Exception:
                         logging.error(f"Unable to download dataset {dataset['pid']}")
@@ -76,6 +79,17 @@ def main(config):
         logging.critical(traceback.format_exc())
         exit(1)
 
+def _generate_netcdf(pid, dataset_dir, conn):
+    """
+    Generate a netCDF file from a CSV file downloaded from the Carbon Portal
+    """
+    filename = database.get_filename(conn, pid)
+    df = pd.read_csv(os.path.join(dataset_dir, filename), index_col='Date/Time')
+    df.index.names = ['time']
+    df.index = pd.to_datetime(df.index).tz_localize(None)
+    xds = xr.Dataset.from_dataframe(df)
+    nc_filename = f'{filename.split(".")[0]}.nc'
+    xds.to_netcdf(os.path.join(dataset_dir, nc_filename))
 
 def _make_datasets_xml_entry(db, pid):
     metadata = database.get_metadata(db, pid)

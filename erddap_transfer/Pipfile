@@ -9,6 +9,8 @@ icoscp-core = "*"
 python-dateutil = "*"
 pandas = "*"
 pause = "*"
+xarray = "*"
+netCDF4 = "*"
 
 [dev-packages]
 
