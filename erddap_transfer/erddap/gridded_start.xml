@@ -1,0 +1,6 @@
+    <reloadEveryNMinutes>10080</reloadEveryNMinutes>
+    <gapThreshold>1000</gapThreshold>
+    <addAttributes>
+        <att name="cdm_data_type">Grid</att>
+        <att name="featureType">null</att>
+    </addAttributes>

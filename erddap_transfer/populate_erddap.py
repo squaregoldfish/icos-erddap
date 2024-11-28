@@ -9,6 +9,7 @@ import os
 import re
 import icos
 import html
+import pandas as pd
 from icoscp_core.icos import data
 from Attribute import Attribute
 
@@ -19,6 +20,10 @@ _SPEC_TO_STRING = {
     "http://meta.icos-cp.eu/resources/cpmeta/icosOtcFosL2Product": "FOS"
 }
 
+_FOS_VAR_FILE = 'fos_variables.csv'
+_SOOP_VAR_FILE = 'soop_variables.csv'
+
+_AXIS_VARS = ['time', 'depth']
 
 # VARIABLE COLUMN IDs
 SOURCE_NAME_COL = 0
@@ -120,16 +125,14 @@ def _make_soop_entry(pid, metadata, config):
     entry += "</addAttributes>\n"
 
     # Data Variables
-    entry += _generate_data_variables_xml("soop_variables.csv")
+    entry += _generate_data_variables_xml(_SOOP_VAR_FILE)
     entry += _make_expocode_variable("trajectory_id")
 
     return entry
 
 
 def _make_people_xml(metadata):
-
     xml = ""
-
     if "people" in metadata:
         entries = metadata["people"]
 
@@ -142,7 +145,6 @@ def _make_people_xml(metadata):
             xml += _make_attribute_xml(Attribute(f"person_{entry_index}_org", ";".join(org_names)))
 
             entry_index = entry_index + 1
-
     return xml
 
 def _make_fos_entry(pid, metadata, config):
@@ -157,7 +159,7 @@ def _make_fos_entry(pid, metadata, config):
     entry += "</addAttributes>\n"
 
     # Data Variables
-    entry += _generate_data_variables_xml("fos_variables.csv")
+    entry += _generate_data_variables_xml(_FOS_VAR_FILE)
     entry += _make_expocode_variable("timeseries_id")
 
     return entry
@@ -296,6 +298,28 @@ def _make_expocode_variable(cf_role=None):
 
     return xml
 
+def make_axis_variable(name, values):
+    xml = '<axisVariable>\n'
+    xml += f'<sourceName>{name}</sourceName>\n'
+    xml += f'<destinationName>{name}</destinationName>\n'
+    xml += '<addAttributes>\n'
+    xml += '<att name="axisValues" type="doubleList">'
+    xml += ','.join([str(v) for v in values])
+    xml += '</att>\n'
+    xml += '</addAttributes>\n'
+    xml += '</axisVariable>\n'
+
+    return xml
+
+def make_gridded_var(var):
+    xml = '<dataVariable>\n'
+    xml += f'<sourceName>{var}</sourceName>\n'
+    xml += f'<destinationName>{var}</destinationName>\n'
+    xml += '<addAttributes/>\n'
+    xml += '</dataVariable>\n'
+
+    return xml
+
 
 def _write_datasets_xml(config, db):
     with open(config["datasets_xml_location"], "w") as out:
@@ -308,7 +332,73 @@ def _write_datasets_xml(config, db):
             out.write(start.read())
 
         # Add the xml for the datasets
-        out.write(database.get_datasets_xml(db))
+        datasets_xml = database.get_datasets_xml(db)
+        for id in datasets_xml.keys():
+            metadata = database.get_metadata(db, id)
+            main_dataset_xml = datasets_xml[id]['xml']
+
+            if datasets_xml[id]['deleted']:
+                main_dataset_xml.replace('active="true"', 'active="false"')
+
+            # Build the gridded XML entry
+            gridded_xml = '<dataset type="EDDGridFromEDDTable" datasetID="'
+            gridded_xml += f'{id}--gridded'
+            gridded_xml += '" active="'
+            gridded_xml += 'false' if datasets_xml[id]['deleted'] else 'true'
+            gridded_xml += '">\n'
+
+            with open("erddap/gridded_start.xml", "r") as gridded_start:
+                gridded_xml += gridded_start.read()
+
+
+            vars_file = None
+            spec = _SPEC_TO_STRING[metadata['data_object']['spec']]
+            if spec == 'SOOP':
+                vars_file = _SOOP_VAR_FILE
+            elif spec == 'FOS':
+                vars_file = _FOS_VAR_FILE
+
+            if vars_file is None:
+                raise ValueError(f'Unrecognised spec {metadata["spec"]}')
+
+            vars = list()
+            with open(f'erddap/{vars_file}') as v:
+                # Skip header
+                v.readline()
+
+                line = v.readline()
+                while line is not None and len(line) > 0:
+                    vars.append(line.split(',')[1])
+                    line = v.readline()
+
+            # Load the data
+            filename = database.get_filename(db, id)
+            dataset_dir = os.path.join(config["datasets_dir"], id)
+
+            # This will need to change when we handle non-time-based data
+            df = pd.read_csv(os.path.join(dataset_dir, filename), index_col='Date/Time', dtype=object)
+            df.index.names = ['time']
+            df.index = pd.to_datetime(df.index).tz_localize(None)
+
+            times = [int(x.timestamp()) for x in df.index]
+            gridded_xml += make_axis_variable('time', times)
+
+            if 'depth' in vars and 'Depth [m]' in df.columns:
+                gridded_xml += make_axis_variable('depth', df['Depth [m]'].unique())
+
+            for var in vars:
+                if var not in _AXIS_VARS:
+                    gridded_xml += make_gridded_var(var)
+
+            # Add the main dataset XML
+            gridded_xml += main_dataset_xml
+
+            gridded_xml += '</dataset>\n'
+
+            out.write(gridded_xml)
+
+            # Now write the main dataset
+            out.write(main_dataset_xml)
 
         # Copy the contents of the end template into the file
         with open("erddap/datasets_xml_end.xml", "r") as end:
