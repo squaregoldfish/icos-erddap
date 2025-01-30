@@ -38,6 +38,7 @@ def main(config):
                 database.mark_deleted(db, pid)
 
             # Get the metadata for the PIDs and update if necessary
+            logging.info("Retrieving metadata from Carbon Portal")
             metadata = icos.get_metadata(datasets)
 
             for pid in metadata.keys():

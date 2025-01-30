@@ -9,7 +9,7 @@ icoscp-core = "*"
 python-dateutil = "*"
 pandas = "*"
 pause = "*"
-icos-cp = "*"
+icoscp = "*"
 
 [dev-packages]
 

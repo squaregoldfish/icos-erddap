@@ -12,6 +12,7 @@ import html
 import pandas as pd
 from icoscp_core.icos import data
 from Attribute import Attribute
+from collections import defaultdict
 
 _LOG_FILE_ = "populate_erddap.log"
 
@@ -23,7 +24,7 @@ _SPEC_TO_STRING = {
 _FOS_VAR_FILE = 'fos_variables.csv'
 _SOOP_VAR_FILE = 'soop_variables.csv'
 
-_AXIS_VARS = ['time', 'depth']
+_AXIS_VARS = ['time', 'depth', 'longitude', 'latitude']
 
 # VARIABLE COLUMN IDs
 SOURCE_NAME_COL = 0
@@ -55,7 +56,7 @@ def main(config):
 
                 # Download the new dataset if required
                 if dataset["new"]:
-                    logging.debug(f"Downloading dataset {dataset['pid']}")
+                    logging.info(f"Downloading dataset {dataset['pid']}")
                     dataset_dir = os.path.join(config["datasets_dir"], dataset["pid"])
                     os.makedirs(dataset_dir, exist_ok=True)
 
@@ -334,6 +335,7 @@ def _write_datasets_xml(config, db):
         # Add the xml for the datasets
         datasets_xml = database.get_datasets_xml(db)
         for id in datasets_xml.keys():
+            logging.debug(f"Adding datasets.xml for {id}")
             metadata = database.get_metadata(db, id)
             main_dataset_xml = datasets_xml[id]['xml']
 
@@ -376,12 +378,16 @@ def _write_datasets_xml(config, db):
             dataset_dir = os.path.join(config["datasets_dir"], id)
 
             # This will need to change when we handle non-time-based data
-            df = pd.read_csv(os.path.join(dataset_dir, filename), index_col='Date/Time', dtype=object)
+            types = defaultdict(lambda: 'object', {'Longitude': 'float', 'Latitude': 'float'})
+            df = pd.read_csv(os.path.join(dataset_dir, filename), index_col='Date/Time', dtype=types)
             df.index.names = ['time']
             df.index = pd.to_datetime(df.index).tz_localize(None)
 
-            times = [int(x.timestamp()) for x in df.index]
-            gridded_xml += make_axis_variable('time', times)
+            times = [int(x.timestamp()) for x in df.index.unique()]
+            gridded_xml += make_axis_variable('time', sorted(set(times)))
+
+            gridded_xml += make_axis_variable('longitude', sorted(df['Longitude'].dropna().unique()))
+            gridded_xml += make_axis_variable('latitude', sorted(df['Latitude'].dropna().unique()))
 
             if 'depth' in vars and 'Depth [m]' in df.columns:
                 gridded_xml += make_axis_variable('depth', df['Depth [m]'].unique())
