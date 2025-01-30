@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 toml = "*"
-icoscp-core = "*"
 python-dateutil = "*"
 pandas = "*"
 pause = "*"

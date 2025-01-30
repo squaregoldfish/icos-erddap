@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "16b33a8a6dbe3233d831eb14ffaef1bead3022a778a02e3069d7d1b679805154"
+            "sha256": "a9c7095611ffab20b2a71c9aec9f0b3e4fbef56de15895ba105d1952f659bcd5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -156,12 +156,11 @@
         },
         "icoscp-core": {
             "hashes": [
-                "sha256:6450a7f1960619876b99022c18e3ba8a6ad45eb7fe47ceb827de8c8b2e15eaa9",
-                "sha256:fc362dc0ee65feea34434ed235c61e7ea2a3a301406f44b69d4ade3f92602fb8"
+                "sha256:872d68b4b3bbae7c3b978f0853e8c5fab05cf926965e274b4004fc6efcfa7a45",
+                "sha256:9f83d7795b0a62ee840e03e9b887b969593b7be805b90802046c82c4043cebd4"
             ],
-            "index": "pypi",
             "markers": "python_version >= '3.10'",
-            "version": "==0.3.7"
+            "version": "==0.3.9"
         },
         "idna": {
             "hashes": [
