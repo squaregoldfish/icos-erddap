@@ -7,6 +7,7 @@ from dateutil.parser import isoparse
 from datetime import datetime, timedelta
 from icoscp_core.icos import meta
 import pandas as pd
+import os
 
 # The ICOS Data Object Specs we're interested in
 _DATA_TYPES = """
@@ -37,7 +38,7 @@ def get_all_data_object_ids():
     logging.debug("Collecting data object IDs and start/end dates")
 
     query = f"""{_QUERY_PREFIX}
-    SELECT ?dobj ?timeStart ?timeEnd WHERE {{
+    SELECT ?dobj ?fileName ?timeStart ?timeEnd WHERE {{
     VALUES ?spec {{ {_DATA_TYPES} }}
     ?dobj cpmeta:hasObjectSpec ?spec .
     ?dobj cpmeta:hasSizeInBytes ?size .
@@ -55,10 +56,11 @@ def get_all_data_object_ids():
         uri = record["dobj"].uri
         pid = uri.split("/")[-1]
 
+        expocode = os.path.splitext(record["fileName"].value)[0]
         start_time = _round_down(isoparse(record["timeStart"].value))
         end_time = _round_up(isoparse(record["timeEnd"].value))
 
-        result.append((pid, start_time, end_time))
+        result.append((pid, expocode, start_time, end_time))
 
     return result
 
@@ -77,7 +79,7 @@ def get_metadata(datasets):
     """
     metadata = dict()
     pid_values_list = ""
-    for (pid, start_date, end_date) in datasets:
+    for (pid, expocode, start_date, end_date) in datasets:
         metadata[pid] = dict()
         pid_values_list += f"<{make_data_object_uri(pid)}> "
 
@@ -99,7 +101,7 @@ def get_metadata(datasets):
                 else:
                     metadata[pid]["data_object"][field] = getattr(record[field], "value")
 
-    for (pid, start_date, end_date) in datasets:
+    for (pid, expocode, start_date, end_date) in datasets:
         with open("queries/otc_metadata.sparql") as qin:
             otc_metadata_query = qin.read()
 

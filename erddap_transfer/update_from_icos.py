@@ -24,9 +24,9 @@ def main(config):
             # Get the list of all data objects in the Carbon Portal
             datasets = sorted(icos.get_all_data_object_ids())
 
-            for (pid, start_date, end_date) in datasets:
+            for (pid, expocode, start_date, end_date) in datasets:
                 if not database.is_in_db(db, pid):
-                    database.add_pid(db, pid)
+                    database.add_pid(db, pid, expocode)
                 elif database.is_deleted(db, pid):
                     database.undelete(db, pid)
 

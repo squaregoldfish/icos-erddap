@@ -79,7 +79,7 @@ def get_active_pids(conn):
         c.close()
 
 
-def add_pid(conn, pid):
+def add_pid(conn, pid, expocode):
     """
     Add a new PID to the database with no metadata.
     The record has its "new" flag set.
@@ -88,7 +88,7 @@ def add_pid(conn, pid):
 
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO data_object VALUES(?, NULL, NULL, 1, 0, 0, NULL)", [pid])
+        c.execute("INSERT INTO data_object VALUES(?, ?, NULL, NULL, 1, 0, 0, NULL)", [pid, expocode])
     finally:
         c.close()
 
@@ -163,16 +163,17 @@ def clear_new(conn, pid):
 def get_pids_with_status(conn):
     c = conn.cursor()
     try:
-        c.execute("SELECT id, new, updated, deleted FROM data_object")
+        c.execute("SELECT id, expocode, new, updated, deleted FROM data_object")
         records = c.fetchall()
         result = []
 
         for record in records:
             dataset = dict()
             dataset["pid"] = record[0]
-            dataset["new"] = bool(record[1])
-            dataset["updated"] = bool(record[2])
-            dataset["deleted"] = bool(record[3])
+            dataset["expocode"] = record[1]
+            dataset["new"] = bool(record[2])
+            dataset["updated"] = bool(record[3])
+            dataset["deleted"] = bool(record[4])
 
             result.append(dataset)
 
@@ -214,7 +215,7 @@ def get_datasets_xml(conn):
     c = conn.cursor()
     try:
         result = dict()
-        c.execute("SELECT id, datasets_xml, deleted FROM data_object ORDER BY id")
+        c.execute("SELECT id, expocode, datasets_xml, deleted FROM data_object ORDER BY id")
         records = c.fetchall()
         for record in records:
             record_xml = record[1]
@@ -223,8 +224,9 @@ def get_datasets_xml(conn):
                 logging.warning(f"No datasets XML for PID {record[0]}")
             else:
                 item = dict()
-                item['xml'] = record[1]
-                item['deleted'] = record[2]
+                item['expocode'] = record[1]
+                item['xml'] = record[2]
+                item['deleted'] = record[3]
 
                 result[record[0]] = item
 
@@ -240,6 +242,7 @@ def _init_db(conn):
     """
     table_sql = """CREATE TABLE data_object(
     id TEXT,
+    expocode TEXT,
     metadata TEXT,
     datasets_xml TEXT,
     new INTEGER,

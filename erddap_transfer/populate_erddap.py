@@ -57,7 +57,7 @@ def main(config):
                 # Download the new dataset if required
                 if dataset["new"]:
                     logging.info(f"Downloading dataset {dataset['pid']}")
-                    dataset_dir = os.path.join(config["datasets_dir"], dataset["pid"])
+                    dataset_dir = os.path.join(config["datasets_dir"], dataset["expocode"])
                     os.makedirs(dataset_dir, exist_ok=True)
 
                     try:
@@ -71,7 +71,7 @@ def main(config):
                 if dataset_ok:
                     if dataset["updated"]:
                         try:
-                            _make_datasets_xml_entry(db, dataset["pid"])
+                            _make_datasets_xml_entry(db, dataset["pid"], dataset["expocode"])
                         except Exception:
                             logging.error(f"Failed to build datasets.xml for dataset {dataset['pid']}")
                             logging.error(traceback.format_exc())
@@ -83,19 +83,19 @@ def main(config):
         exit(1)
 
 
-def _make_datasets_xml_entry(db, pid):
+def _make_datasets_xml_entry(db, pid, expocode):
     metadata = database.get_metadata(db, pid)
 
     entry = '<dataset type="EDDTableFromAsciiFiles" '
-    entry += f'datasetID="{pid}" '
+    entry += f'datasetID="{expocode}" '
     entry += f'active="true"'
     entry += ">\n"
 
     spec = metadata["data_object"]["spec"].split("/")[-1]
     if spec == "icosOtcL2Product":
-        entry += _make_soop_entry(pid, metadata, config)
+        entry += _make_soop_entry(pid, expocode, metadata, config)
     elif spec == "icosOtcFosL2Product":
-        entry += _make_fos_entry(pid, metadata, config)
+        entry += _make_fos_entry(pid, expocode, metadata, config)
     else:
         raise ValueError(f"Unrecognised dobj spec {spec}")
 
@@ -104,9 +104,9 @@ def _make_datasets_xml_entry(db, pid):
     database.write_datasets_xml(db, pid, entry)
 
 
-def _make_soop_entry(pid, metadata, config):
+def _make_soop_entry(pid, expocode, metadata, config):
     # Common base details
-    entry = _make_common_base(pid, config)
+    entry = _make_common_base(pid, expocode, config)
 
     # Attributes
     entry += "<addAttributes>\n"
@@ -148,9 +148,9 @@ def _make_people_xml(metadata):
             entry_index = entry_index + 1
     return xml
 
-def _make_fos_entry(pid, metadata, config):
+def _make_fos_entry(pid, expocode, metadata, config):
     # Common base details
-    entry = _make_common_base(pid, config)
+    entry = _make_common_base(pid, expocode, config)
 
     # Attributes
     entry += "<addAttributes>\n"
@@ -166,10 +166,10 @@ def _make_fos_entry(pid, metadata, config):
     return entry
 
 
-def _make_common_base(pid, config):
+def _make_common_base(pid, expocode, config):
     base = "<reloadEveryNMinutes>10080</reloadEveryNMinutes>\n"
     base += "<updateEveryNMillis>10000</updateEveryNMillis>\n"
-    base += f"<fileDir>{html.escape(os.path.join(config['datasets_dir'], pid))}</fileDir>\n"
+    base += f"<fileDir>{html.escape(os.path.join(config['datasets_dir'], expocode))}</fileDir>\n"
     base += "<fileNameRegex>.*\\.csv</fileNameRegex>\n"
     base += "<recursive>false</recursive>\n"
     base += "<pathRegex>.*</pathRegex>\n"
@@ -335,6 +335,7 @@ def _write_datasets_xml(config, db):
         # Add the xml for the datasets
         datasets_xml = database.get_datasets_xml(db)
         for id in datasets_xml.keys():
+            expocode = datasets_xml[id]['expocode']
             logging.debug(f"Adding datasets.xml for {id}")
             metadata = database.get_metadata(db, id)
             main_dataset_xml = datasets_xml[id]['xml']
@@ -344,7 +345,7 @@ def _write_datasets_xml(config, db):
 
             # Build the gridded XML entry
             gridded_xml = '<dataset type="EDDGridFromEDDTable" datasetID="'
-            gridded_xml += f'{id}--gridded'
+            gridded_xml += f'{expocode}--gridded'
             gridded_xml += '" active="'
             gridded_xml += 'false' if datasets_xml[id]['deleted'] else 'true'
             gridded_xml += '">\n'
@@ -375,7 +376,7 @@ def _write_datasets_xml(config, db):
 
             # Load the data
             filename = database.get_filename(db, id)
-            dataset_dir = os.path.join(config["datasets_dir"], id)
+            dataset_dir = os.path.join(config["datasets_dir"], expocode)
 
             # This will need to change when we handle non-time-based data
             types = defaultdict(lambda: 'object', {'Longitude': 'float', 'Latitude': 'float'})
